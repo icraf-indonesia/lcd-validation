@@ -17,15 +17,15 @@
 dashboardPage(
   skin = 'black', 
   ###*header####
-  header = dashboardHeader(title="LCD Validation", titleWidth = "300px"),
+  header = dashboardHeader(title="LCD Validation", titleWidth = "325px"),
   
   ###*sidebar####
-  sidebar = dashboardSidebar(width = "300px",
+  sidebar = dashboardSidebar(width = "325px",
                              sidebarMenu(
                                ###sidebar-home####
                                menuItem("Beranda", icon = icon("home"), tabName = "home"),
                                ###sidebar-login####
-                               menuItem("Login", icon = icon("cogs"),
+                               menuItem("Login", icon = icon("user-cog", lib = "font-awesome"),
                                         selectInput("categoryProvince", label = "Pilih provinsi", 
                                                     list(`Barat` = list("Aceh", "Bangka Belitung", "Bengkulu", "Jambi", "Kepulauan Riau",
                                                                         "Lampung", "Riau", "Sumatera Barat", "Sumatera Selatan", "Sumatera Utara"),
@@ -44,13 +44,13 @@ dashboardPage(
                                         actionButton("inputSetting", label = "Masuk")
                                ),
                                ###sidebar-peta####
-                               menuItem("Peta", icon = icon("sitemap"), 
+                               menuItem("Peta", icon = icon("map-marked-alt", lib = "font-awesome"), 
                                         menuSubItem("Ringkasan Hasil Sistem", tabName = "resTbl")
                                         # actionButton("submitSys", "Submit")
                                         # actionButton("expSys", "Export")
                                ),
                                ###sidebar-kirim####
-                               menuItem("Kirim", icon = icon("users"), 
+                               menuItem("Kirim", icon = icon("paper-plane", lib = "font-awesome"), 
                                         menuSubItem("Hasil setiap OPD", tabName = "resTblOrg"),
                                         uiOutput("selectizeInstitution"),
                                         menuSubItem("Ringkasan Hasil Organisasi", tabName = "resTblOrgAll")
@@ -58,7 +58,7 @@ dashboardPage(
                                         # actionButton("expInd", "Export")
                                ),
                                ###sidebar-tabel####
-                               menuItem("Tabel", icon = icon("address-card"), 
+                               menuItem("Tabel", icon = icon("database", lib = "font-awesome"), 
                                         menuSubItem("Hasil setiap Individu", tabName = "resTblInd"),
                                         uiOutput("selectizeName"),
                                         menuSubItem("Ringkasan Hasil Individu", tabName = "resTblIndAll")
@@ -66,7 +66,7 @@ dashboardPage(
                                         # actionButton("expInd", "Export")
                                ),
                                ###sidebar-bantuan####
-                               menuItem("Tentang", icon = icon("info-circle"), tabName="help")
+                               menuItem("Tentang", icon = icon("info-circle", lib = "font-awesome"), tabName="help")
                              )
   ),
   
