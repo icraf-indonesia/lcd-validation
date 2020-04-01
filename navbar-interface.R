@@ -1,6 +1,6 @@
 library(markdown)
 
-navbarPage("LCD Validation", position = "static-top", inverse = TRUE, collapsible = TRUE, 
+navbarPage("VAM PRK", position = "static-top", inverse = TRUE, collapsible = TRUE, 
            tabPanel("Beranda", icon = icon("home"),
                     jumbotron(img(src="landingpage.png", width="100%"), " ", button = FALSE)
            ),

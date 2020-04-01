@@ -48,12 +48,25 @@ server <- function(input, output, session){
       paste0(actionTotal, " Aksi Mitigasi"), "Total Aksi Mitigasi", color="red"
     )
   })
+  
   output$validator <- renderValueBox({
     validatorTotal <- nrow(registKoboData)
     valueBox(
       paste0(validatorTotal, " Orang"), "Total Validator", color="yellow"
     )
   })
+  
+  # output$distributionMap <- renderLeaflet({
+  #   long_lat_data<-read_excel("data/file.xlsx")
+  #   long_lat_data$`_respgeopoint_latitude` <- as.numeric(long_lat_data$`_respgeopoint_latitude`)
+  #   long_lat_data$`_respgeopoint_longitude` <- as.numeric(long_lat_data$`_respgeopoint_longitude`)
+  #   kobo_data <- subset(long_lat_data, select=c(`_respgeopoint_latitude`, `_respgeopoint_longitude`, aksi_mitigasi))
+  #   colnames(kobo_data) = c("lat", "long", "aksi")
+  #   leaflet(data = kobo_data) %>% addTiles() %>% addMarkers(
+  #     clusterOptions = markerClusterOptions()
+  #   )
+  # 
+  # })
   
   ### MENU TENTANG ####
   
