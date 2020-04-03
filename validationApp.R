@@ -30,7 +30,7 @@ loginpage <- div(id = "loginpage", style = "width: 500px; max-width: 100%; margi
                                  font-size: 18px; font-weight: 600;"),
                      shinyjs::hidden(
                        div(id = "nomatch",
-                           tags$p("Oops! Email atau password Anda salah!",
+                           tags$p("Oops! Email atau password Anda salah",
                                   style = "color: red; font-weight: 600; 
                                             padding-top: 5px;font-size:16px;", 
                                   class = "text-center"))),
@@ -105,7 +105,7 @@ server <- function(input, output, session) {
     if (USER$login == TRUE ) {
       navbarPage("VAM PRK", position = "static-top", collapsible = TRUE,
                  tabPanel("Beranda", icon = icon("home"),
-                          jumbotron(img(src="landingpage.png", width="100%"), " ", button = FALSE)
+                          jumbotron(img(src="www/landingpage.png", width="100%"), " ", button = FALSE)
                  ),
                  # tabPanel("Masuk", icon = icon("user-cog", lib = "font-awesome"), 
                  #          selectInput("categoryProvince", label = "Pilih provinsi", 
@@ -178,7 +178,7 @@ server <- function(input, output, session) {
   ### MENU ANALISIS (Mobile Apps Version)####
   
   output$kontribusi <- renderValueBox({
-    kontribusi <- length(which(vamKoboData$`profil/email`==input$email))
+    kontribusi <- length(which(vamKoboData$`profil/email`==input$userName))
     valueBox(
       paste0(kontribusi, " Kontribusi"), "Total Kontribusi", color="red"
     )
