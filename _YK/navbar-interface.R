@@ -20,13 +20,24 @@ navbarPage("VAM PRK", position = "static-top", inverse = TRUE, collapsible = TRU
                               width = NULL, placeholder = "E-mail harus sama dengan saat Registrasi"),
                     actionButton("inputSetting", label = "Masuk")
            ),
-           tabPanel("Analisis", icon = icon("chart-bar", lib = "font-awesome"),
+           tabPanel("Pengguna", icon = icon("user", lib = "font-awesome"),
                     fluidRow(
                       valueBoxOutput(width=6, "kontribusi"),
-                      valueBoxOutput(width=6, "validator")
+                      valueBoxOutput(width=6, "notValidate1")
                     ),
-                    plotlyOutput("curve1"),
-                    plotlyOutput("curve2")
+                    plotlyOutput("subsectorChart"),
+                    plotlyOutput("validSubsector")
+           ),
+           tabPanel("Aksara", icon = icon("chart-bar", lib = "font-awesome"),
+                    fluidRow(
+                      valueBoxOutput(width=6, "kontributor"),
+                      valueBoxOutput(width=6, "validator"),
+                      valueBoxOutput(width=6, "validate"),
+                      valueBoxOutput(width=6, "notValidate2")
+                    ),
+                    plotlyOutput("conditionChart"),
+                    leafletOutput("distributionMap"),
+                    dataTableOutput("recommendTbl")
            ),
            # tabPanel("Peta", icon = icon("map-marked-alt", lib = "font-awesome"),
            #          actionButton("formInput", label = "Mulai isi form")

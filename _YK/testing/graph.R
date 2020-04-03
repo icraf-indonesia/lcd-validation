@@ -20,7 +20,7 @@ kabkot <- ggplot(aksara_data, aes(x=factor(lokasi_kabkot)))+
   labs(title="Jumlah Aksi Mitigasi yang Berstatus Final", x="Kabupaten/Kota", y = "Jumlah Aksi")
 ggplotly(kabkot)
 
-### Jumlah Aksi Mitigasi yang Berstatus Final ####
+### Jumlah Aksi Mitigasi yang Tervalidasi ####
 aksara_data$jumlah <- 1
 aksara_data$validate[aksara_data$validate==1] <- "Tervalidasi"
 aksara_data$validate[aksara_data$validate==0] <- "Belum Tervalidasi"
