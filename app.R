@@ -30,7 +30,7 @@ loginpage <- div(titlePanel ("VAM PRK"), id = "loginpage", style = "width: 500px
                                  font-size: 18px; font-weight: 600;"),
                      shinyjs::hidden(
                        div(id = "nomatch",
-                           tags$p("Oops! Email atau password Anda salah!",
+                           tags$p("Oops! Email atau password Anda salah",
                                   style = "color: red; font-weight: 600; 
                                             padding-top: 5px;font-size:16px;", 
                                   class = "text-center"))),
@@ -293,7 +293,7 @@ server <- function(input, output, session) {
     kobo_data <- subset(vamKoboData, select=c(`validation_form/pertanyaan_kunci/_point_latitude`, `validation_form/pertanyaan_kunci/_point_longitude`, `validation_form/pertanyaan_kunci/aksi`))
     colnames(kobo_data) = c("latitude", "longitude", "aksi")
     leaflet(data = kobo_data) %>% addTiles() %>% addMarkers(
-      popup= ~paste0(aksi, "</br> Desa: ", vamKoboData$`validation_form/admin_data/desa`, "</br>Tahun Aksi: ", vamKoboData$`validation_form/pertanyaan_kunci/tahun`,
+      popup= ~paste0(aksi, "</br>Desa: ", vamKoboData$`validation_form/admin_data/desa`, "</br>Tahun Aksi: ", vamKoboData$`validation_form/pertanyaan_kunci/tahun`,
                      "</br>Kondisi: ", vamKoboData$`validation_form/pertanyaan_kunci/kondisi`)
     )
   })

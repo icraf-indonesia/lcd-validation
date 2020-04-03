@@ -60,7 +60,7 @@ credentials = data.frame(
 
 header <- dashboardHeader(title = NULL, titleWidth = NULL ,uiOutput("logoutbtn"))
 sidebar <- dashboardSidebar(disable=TRUE)
-# body <- dashboardBody(shinyjs::useShinyjs(), uiOutput("body"))
+body <- dashboardBody(shinyjs::useShinyjs(), uiOutput("body"))
 ui<-dashboardPage(header, sidebar, body, skin = "black")
 
 server <- function(input, output, session) {
@@ -105,7 +105,7 @@ server <- function(input, output, session) {
     if (USER$login == TRUE ) {
       navbarPage("VAM PRK", position = "static-top", collapsible = TRUE,
                  tabPanel("Beranda", icon = icon("home"),
-                          jumbotron(img(src="www/landingpage.png", width="100%"), " ", button = FALSE)
+                          jumbotron(img(src="landingpage.png", width="100%"), " ", button = FALSE)
                  ),
                  # tabPanel("Masuk", icon = icon("user-cog", lib = "font-awesome"), 
                  #          selectInput("categoryProvince", label = "Pilih provinsi", 
@@ -295,7 +295,7 @@ server <- function(input, output, session) {
     kobo_data <- subset(vamKoboData, select=c(`validation_form/pertanyaan_kunci/_point_latitude`, `validation_form/pertanyaan_kunci/_point_longitude`, `validation_form/pertanyaan_kunci/aksi`))
     colnames(kobo_data) = c("latitude", "longitude", "aksi")
     leaflet(data = kobo_data) %>% addTiles() %>% addMarkers(
-      popup= ~paste0(aksi, "</br> Desa: ", vamKoboData$`validation_form/admin_data/desa`, "</br>Tahun Aksi: ", vamKoboData$`validation_form/pertanyaan_kunci/tahun`,
+      popup= ~paste0(aksi, "</br>Desa: ", vamKoboData$`validation_form/admin_data/desa`, "</br>Tahun Aksi: ", vamKoboData$`validation_form/pertanyaan_kunci/tahun`,
                      "</br>Kondisi: ", vamKoboData$`validation_form/pertanyaan_kunci/kondisi`)
     )
   })
