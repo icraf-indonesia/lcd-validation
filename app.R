@@ -17,9 +17,9 @@ library(koboloadeR)
 # library(rtf)
 library(sodium)
 
-loginpage <- div(titlePanel("VAM PRK"), id = "loginpage", style = "width: 500px; max-width: 100%; margin: 0 auto; padding: 20px;",
+loginpage <- div(id = "loginpage", style = "width: 500px; max-width: 100%; margin: 0 auto; padding: 20px;",
                  wellPanel(
-                   tags$h2("Login", class = "text-center", style = "padding-top: 0;color:#333; font-weight:600;"),
+                   tags$h2("Log In", class = "text-center", style = "padding-top: 0;color:#333; font-weight:600;"),
                    textInput("userName", placeholder="Email", label = tagList(icon("user"), "Email")),
                    passwordInput("passwd", placeholder="Password", label = tagList(icon("unlock-alt"), "Password")),
                    br(),
@@ -30,14 +30,14 @@ loginpage <- div(titlePanel("VAM PRK"), id = "loginpage", style = "width: 500px;
                                  font-size: 18px; font-weight: 600;"),
                      shinyjs::hidden(
                        div(id = "nomatch",
-                           tags$p("Oops! Email atau password Anda salah",
+                           tags$p("Oops! Email atau password Anda salah!",
                                   style = "color: red; font-weight: 600; 
                                             padding-top: 5px;font-size:16px;", 
                                   class = "text-center"))),
                      br(),
                      tags$code("Password: mypass")
                    )
-))
+                 ))
 
 ## Mengunduh data dari Kobo
 vamKoboData <- kobo_data_downloader("421351", "vamprk2020:Icraf2019!")
@@ -60,7 +60,7 @@ credentials = data.frame(
 
 header <- dashboardHeader(title = NULL, titleWidth = NULL ,uiOutput("logoutbtn"))
 sidebar <- dashboardSidebar(disable=TRUE)
-# body <- dashboardBody(shinyjs::useShinyjs(), uiOutput("body"))
+body <- dashboardBody(shinyjs::useShinyjs(), uiOutput("body"))
 ui<-dashboardPage(header, sidebar, body, skin = "black")
 
 server <- function(input, output, session) {
@@ -105,7 +105,7 @@ server <- function(input, output, session) {
     if (USER$login == TRUE ) {
       navbarPage("VAM PRK", position = "static-top", collapsible = TRUE,
                  tabPanel("Beranda", icon = icon("home"),
-                          jumbotron(img(src="www/landingpage.png", width="100%"), " ", button = FALSE)
+                          jumbotron(img(src="landingpage.png", width="100%"), " ", button = FALSE)
                  ),
                  # tabPanel("Masuk", icon = icon("user-cog", lib = "font-awesome"), 
                  #          selectInput("categoryProvince", label = "Pilih provinsi", 
@@ -166,9 +166,6 @@ server <- function(input, output, session) {
   })
   
   ### MENU MASUK ####
-  observeEvent(input$inputSetting, {
-    showModal(ui=modalDialog("Anda berhasil masuk", easyClose = TRUE), session=session)
-  })
   
   aksara_data <- read_excel("data/aksara-data.xlsx")
   vamKoboData<-readRDS("data/vamKoboData")
@@ -231,9 +228,10 @@ server <- function(input, output, session) {
   ### MENU ANALISIS (Web Version) ####
   
   output$kontributor <- renderValueBox({
-    kontributorFreq <- count(vamKoboData, "`profil/email`")
-    kontributorFreq$n <- 1
-    kontributor <- sum(kontributorFreq$n)
+    vamKoboData<-readRDS("data/vamKoboData")
+    vamKoboData$`profil/email` <- tolower(vamKoboData$`profil/email`)
+    kontributorFreq <- unique(vamKoboData$`profil/email`)
+    kontributor <- length(kontributorFreq)
     valueBox(
       paste0(kontributor, " Orang"), "Total Kontributor", color="purple"
     )
@@ -302,5 +300,5 @@ server <- function(input, output, session) {
   
 }
 
-runApp(list(ui = ui, server = server), launch.browser = TRUE)
-# shinyApp(ui = ui, server = server)
+# runApp(list(ui = ui, server = server), launch.browser = TRUE)
+shinyApp(ui = ui, server = server)
