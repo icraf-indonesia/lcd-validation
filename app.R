@@ -128,8 +128,26 @@ server <- function(input, output, session) {
                             valueBoxOutput(width=6, "kontribusi"),
                             valueBoxOutput(width=6, "notValidate1")
                           ),
-                          plotlyOutput("subsectorChart"),
-                          plotlyOutput("validSubsector")
+                          selectInput("finalGraph_user", "Tampilkan Grafik Berdasarkan", c("Subsektor", "Administrasi (Kabupaten/Kota)")),
+                          conditionalPanel(
+                            condition="input.finalGraph_user=='Subsektor'",
+                            plotlyOutput("subsectorChart")
+                          ),
+                          conditionalPanel(
+                            condition="input.finalGraph_user=='Administrasi (Kabupaten/Kota)'",
+                            plotlyOutput("kabkotChart")
+                          ),
+                          # plotlyOutput("subsectorChart"),
+                          selectInput("validGraph_user", "Tampilkan Grafik Berdasarkan", c("Subsektor", "Administrasi (Kabupaten/Kota)")),
+                          conditionalPanel(
+                            condition="input.validGraph_user=='Subsektor'",
+                            plotlyOutput("validSubsector")
+                          ),
+                          conditionalPanel(
+                            condition="input.validGraph_user=='Administrasi (Kabupaten/Kota)'",
+                            plotlyOutput("validKabkot")
+                          )
+                          # plotlyOutput("validSubsector")
                  ),
                  tabPanel("Aksara", icon = icon("chart-bar", lib = "font-awesome"),
                           fluidRow(
@@ -138,8 +156,11 @@ server <- function(input, output, session) {
                             valueBoxOutput(width=6, "validate"),
                             valueBoxOutput(width=6, "notValidate2")
                           ),
+                          br(),
                           plotlyOutput("conditionChart"),
+                          br(),
                           leafletOutput("distributionMap"),
+                          br(),
                           dataTableOutput("recommendTbl")
                  ),
                  # tabPanel("Peta", icon = icon("map-marked-alt", lib = "font-awesome"),
@@ -220,7 +241,7 @@ server <- function(input, output, session) {
   output$validKabkot <-renderPlotly({
     valid_kabkot <- ggplot(aksara_data, aes(x=factor(lokasi_kabkot), fill=factor(validate))) + 
       geom_bar(stat="count") +
-      labs(title="Jumlah Aksi Mitigasi yang Tervalidasi dan Belum Tervalidasi", x="Subsektor", y = "Jumlah Aksi", fill="")  
+      labs(title="Jumlah Aksi Mitigasi yang Tervalidasi dan Belum Tervalidasi", x="Kabupaten/Kota", y = "Jumlah Aksi", fill="")  
     ggplotly(valid_kabkot) 
   })
   
@@ -240,7 +261,7 @@ server <- function(input, output, session) {
   output$validator <- renderValueBox({
     validatorTotal <- nrow(registKoboData)
     valueBox(
-      paste0(validatorTotal, " Orang"), "Total Validator", color="yellow"
+      paste0(validatorTotal, " Orang"), "Total Validator", color="aqua"
     )
   })
   
