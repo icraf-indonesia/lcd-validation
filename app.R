@@ -669,9 +669,10 @@ server <- function(input, output, session) {
         kondisi <- ifelse(persen_selisih<0.8 & persen_selisih>=0.6 , "Baik", kondisi)
         kondisi <- ifelse(persen_selisih<0.6 & persen_selisih>=0.4 , "Kurang Baik", kondisi)
         kondisi <- ifelse(persen_selisih<0.4 & persen_selisih>=0.2 , "Tidak Baik", kondisi)
-        penilaian_validasi <- "PERLU DIREVISI"
-        penilaian_validasi <- ifelse(kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6 & kontributor >= 5 , "TERVALIDASI", penilaian_validasi)
-        penilaian_validasi <- ifelse(kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6 & kontributor < 5, "BELUM DIVALIDASI", penilaian_validasi)
+        penilaian_validasi <- "BELUM DIVALIDASI"
+        # penilaian_validasi <- ifelse(kontributor < 5, "BELUM DIVALIDASI", penilaian_validasi)
+        penilaian_validasi <- ifelse( kontributor >= 5 & (kesesuaian_nama=="Tidak Sesuai" | kesesuaian_tahun=="Tidak Sesuai" | kesesuaian_realisasi=="Tidak Sesuai" | kesesuaian_jenis=="Tidak Sesuai" | persen_selisih < 0.6), "PERLU DIREVISI", penilaian_validasi)
+        penilaian_validasi <- ifelse( kontributor >= 5 & kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6, "TERVALIDASI", penilaian_validasi)
         
         am_id <- unique(admin_id[i])
         
@@ -812,6 +813,8 @@ server <- function(input, output, session) {
       am_id <- unique(admin_id[i])
       
       test <- cbind(am_id, kontributor, q1, q1_maj, q1_perc, q1.1, q1.2, q2, q2_maj, q2_perc, q2.1, q2.2, q2.3, q2.4, q3, fin_valass)
+      # colnames(test) <- c("ID Aksi Mitigasi", "Kontributor", "Keberadaan Aksi Mitigasi", "Jumlah Jawaban Dominan", "Persen Keyakinan", "Nama Kegiatan","Tahun Aksi Mitigasi", "q2", 
+                          # "Jumlah Jawaban Dominan 2", "Persen Keyakinan 2", "Realisasi", "Jenis Objek", "Umur Objek", "Jumlah Objek yang Masih Hidup", "Rekomendasi", "Tingkat Keyakinan")
       test <- as.data.frame(test)
       
       c=rbind(c, test)
@@ -819,7 +822,7 @@ server <- function(input, output, session) {
     
     hasil <- as.data.frame(c)
     tables$dataQC <- hasil
-    datatable(hasil, escape = FALSE)
+    datatable(hasil, options = list(scrollX = TRUE))
   })
   
   output$tabelvalidasi <- renderDataTable({
@@ -867,9 +870,10 @@ server <- function(input, output, session) {
       kondisi <- ifelse(persen_selisih<0.8 & persen_selisih>=0.6 , "Baik", kondisi)
       kondisi <- ifelse(persen_selisih<0.6 & persen_selisih>=0.4 , "Kurang Baik", kondisi)
       kondisi <- ifelse(persen_selisih<0.4 & persen_selisih>=0.2 , "Tidak Baik", kondisi)
-      penilaian_validasi <- "PERLU DIREVISI"
-      penilaian_validasi <- ifelse(kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6 & kontributor >= 5 , "TERVALIDASI", penilaian_validasi)
-      penilaian_validasi <- ifelse(kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6 & kontributor < 5, "BELUM DIVALIDASI", penilaian_validasi)
+      penilaian_validasi <- "BELUM DIVALIDASI"
+      # penilaian_validasi <- ifelse(kontributor < 5, "BELUM DIVALIDASI", penilaian_validasi)
+      penilaian_validasi <- ifelse( kontributor >= 5 & (kesesuaian_nama=="Tidak Sesuai" | kesesuaian_tahun=="Tidak Sesuai" | kesesuaian_realisasi=="Tidak Sesuai" | kesesuaian_jenis=="Tidak Sesuai" | persen_selisih < 0.6), "PERLU DIREVISI", penilaian_validasi)
+      penilaian_validasi <- ifelse( kontributor >= 5 & kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6, "TERVALIDASI", penilaian_validasi)
       
       am_id <- unique(admin_id[i])
       
