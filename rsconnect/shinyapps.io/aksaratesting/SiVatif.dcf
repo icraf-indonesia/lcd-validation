@@ -1,0 +1,13 @@
+name: SiVatif
+title: SiVatif
+username:
+account: aksaratesting
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3493626
+bundleId: 4358212
+url: https://aksaratesting.shinyapps.io/SiVatif/
+when: 1615981827.98054
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|gmpas_link.R|README.md|_YK|SiVatif

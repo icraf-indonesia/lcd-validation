@@ -1,0 +1,13 @@
+name: lcd-validation
+title: lcd-validation
+username:
+account: yumnakarimah
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3484505
+bundleId: 4111906
+url: https://yumnakarimah.shinyapps.io/lcd-validation/
+when: 1610970420.65043
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|README.md|validationApp.R|_YK/app.R|_YK/get_data_from_api.R|_YK/interface.R|_YK/navbar-interface.R|_YK/testing/graph.R|SiVatif/app.R|SiVatif/rsconnect/shinyapps.io/yumnakarimah/SiVatif.dcf

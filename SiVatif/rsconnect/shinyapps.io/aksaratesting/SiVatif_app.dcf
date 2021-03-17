@@ -1,0 +1,12 @@
+name: SiVatif_app
+title: SiVatif_app
+username:
+account: aksaratesting
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3501024
+bundleId: 4125749
+url: https://aksaratesting.shinyapps.io/SiVatif_app/
+when: 1611237711.91329
+asMultiple: FALSE
+asStatic: FALSE
