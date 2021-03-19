@@ -136,8 +136,10 @@ for (i in 1:length(admin_id)) {
   kondisi <- ifelse(persen_selisih<0.8 & persen_selisih>=0.6 , "Baik", kondisi)
   kondisi <- ifelse(persen_selisih<0.6 & persen_selisih>=0.4 , "Kurang Baik", kondisi)
   kondisi <- ifelse(persen_selisih<0.4 & persen_selisih>=0.2 , "Tidak Baik", kondisi)
-  penilaian_validasi <- "PERLU DIREVISI"
-  penilaian_validasi <- ifelse(kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6 , "TERVALIDASI", penilaian_validasi)
+  penilaian_validasi <- "BELUM DIVALIDASI"
+  # penilaian_validasi <- ifelse(kontributor < 5, "BELUM DIVALIDASI", penilaian_validasi)
+  penilaian_validasi <- ifelse(kontributor >= 5 & hasil$fin_valass=="Tinggi" & (kesesuaian_nama=="Tidak Sesuai" | kesesuaian_tahun=="Tidak Sesuai" | kesesuaian_realisasi=="Tidak Sesuai" | kesesuaian_jenis=="Tidak Sesuai" | persen_selisih < 0.6), "PERLU DIREVISI", penilaian_validasi)
+  penilaian_validasi <- ifelse(kontributor >= 5 & hasil$fin_valass=="Tinggi" & kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6, "TERVALIDASI", penilaian_validasi)
   
   am_id <- unique(admin_id[i])
   
