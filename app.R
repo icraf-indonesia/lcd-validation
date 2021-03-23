@@ -262,7 +262,7 @@ server <- function(input, output, session) {
   output$kontribusi <- renderValueBox({
     kontribusi <- length(which(vamKoboData$`profil/email`==input$userName))
     valueBox(
-      paste0(kontribusi, " Kontribusi"), "Total Kontribusi", color="red"
+      paste0(kontribusi, " Kontribusi"), "Total Kontribusi", color="green"
     )
   })
   
@@ -274,12 +274,12 @@ server <- function(input, output, session) {
     data_aksara <- read_excel("data/aksara_table.xlsx")
     kontribusi <- length(which(vamKoboData$`profil/email`==input$userName))
     if (kontribusi - nrow(data_aksara)<0){
-      notValidateTotal <- 0
+      notValidateTotal <- -1*(kontribusi - nrow(data_aksara))
     }else {
       notValidateTotal <- kontribusi - nrow(data_aksara)
     }
     valueBox(
-      paste0(notValidateTotal, " Aksi Mitigasi"), "Total Aksi Belum Anda Validasi", color="yellow"
+      paste0(notValidateTotal, " Aksi Mitigasi"), "Total Aksi Belum Anda Validasi", color="red"
     )
   })
   
