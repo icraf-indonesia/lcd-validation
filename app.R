@@ -256,14 +256,7 @@ server <- function(input, output, session) {
   })
   
   tables <- reactiveValues(dataQC=data.frame(), dataValid=data.frame())
-  
-  ### MENU MASUK ####
-  
-  aksara_data <- read_excel("data/aksara-data.xlsx")
-  vamKoboData<-readRDS("data/vamKoboData")
-  vamKoboData$`profil/email` <- tolower(vamKoboData$`profil/email`)
-  registKoboData <- readRDS("data/registKoboData")
-  
+
   ### MENU ANALISIS (Mobile Apps Version)####
   
   output$kontribusi <- renderValueBox({
@@ -280,8 +273,11 @@ server <- function(input, output, session) {
     # )
     data_aksara <- read_excel("data/aksara_table.xlsx")
     kontribusi <- length(which(vamKoboData$`profil/email`==input$userName))
-    
-    notValidateTotal <- kontribusi - nrow(data_aksara)
+    if (kontribusi - nrow(data_aksara)<0){
+      notValidateTotal <- 0
+    }else {
+      notValidateTotal <- kontribusi - nrow(data_aksara)
+    }
     valueBox(
       paste0(notValidateTotal, " Aksi Mitigasi"), "Total Aksi Belum Anda Validasi", color="yellow"
     )
