@@ -53,41 +53,36 @@ kc_server_url <- "https://kc.kobotoolbox.org/"
 form_reg <- 421335 #Registrasi
 form_app <- 623420 #App
 
-### Registrasi ###
-url_reg <- paste0(kc_server_url,"api/v1/data/",form_reg,"?format=csv")
-
-### App ###
-url_app <- paste0(kc_server_url,"api/v1/data/",form_app,"?format=csv")
-
-aksara_data <- read_excel("data/aksara-data.xlsx")
-vamKoboData<-readRDS("data/vamKoboData")
-vamKoboData$`profil/email` <- tolower(vamKoboData$`profil/email`)
-registKoboData <- readRDS("data/registKoboData")
-
-credentials = data.frame(
-  username_id = registKoboData$`profil/email`,
-  passod   = sapply(c(rep("password", nrow(registKoboData))),password_store),
-  # permission  = c("basic", "advanced"), 
-  stringsAsFactors = F
-)
-
 header <- dashboardHeader(title = NULL, titleWidth = NULL ,uiOutput("logoutbtn"))
 sidebar <- dashboardSidebar(disable=TRUE)
 body <- dashboardBody(shinyjs::useShinyjs(), uiOutput("body"))
 ui<-dashboardPage(header, sidebar, body, skin = "black")
 
 server <- function(input, output, session) {
-
   ### Registrasi ###
+  url_reg <- paste0(kc_server_url,"api/v1/data/",form_reg,"?format=csv")
   rawdata_reg  <- GET(url_reg,authenticate("vamprk2020","Icraf2019!"),progress())
   registKoboData  <- read_csv(content(rawdata_reg,"raw",encoding = "UTF-8"))
-  saveRDS(registKoboData, "data/registKoboData")
-
+  
   ### App ###
+  url_app <- paste0(kc_server_url,"api/v1/data/",form_app,"?format=csv")
   rawdata_app  <- GET(url_app,authenticate("vamprk2020","Icraf2019!"),progress())
   vamKoboData  <- read_csv(content(rawdata_app,"raw",encoding = "UTF-8"))
+  
+  saveRDS(registKoboData, "data/registKoboData")
   saveRDS(vamKoboData, "data/vamKoboData")
   
+  aksara_data <- read_excel("data/aksara-data.xlsx")
+  vamKoboData<-readRDS("data/vamKoboData")
+  vamKoboData$`profil/email` <- tolower(vamKoboData$`profil/email`)
+  registKoboData <- readRDS("data/registKoboData")
+  
+  credentials = data.frame(
+    username_id = registKoboData$`profil/email`,
+    passod   = sapply(c(rep("password", nrow(registKoboData))),password_store),
+    # permission  = c("basic", "advanced"), 
+    stringsAsFactors = F
+  )
     ### Login Page ####
   login = FALSE
   USER <- reactiveValues(login = login)
@@ -129,7 +124,8 @@ server <- function(input, output, session) {
     if (USER$login == TRUE ) {
       navbarPage("SiVaTif-PRKI", position = "static-top", collapsible = TRUE,
                  tabPanel("Beranda", icon = icon("home"),
-                          jumbotron(img(src="landingpage-02.jpg", width="100%"), " ", button = FALSE)
+                          jumbotron(img(src="lp.png", height="100%", width="100%"), " ", button = FALSE,
+                                    tags$style("background-size: cover;"))
                  ),
                  # tabPanel("Pengguna",
                  #          tabsetPanel(
@@ -813,8 +809,8 @@ server <- function(input, output, session) {
       am_id <- unique(admin_id[i])
       
       test <- cbind(am_id, kontributor, q1, q1_maj, q1_perc, q1.1, q1.2, q2, q2_maj, q2_perc, q2.1, q2.2, q2.3, q2.4, q3, fin_valass)
-      # colnames(test) <- c("ID Aksi Mitigasi", "Kontributor", "Keberadaan Aksi Mitigasi", "Jumlah Jawaban Dominan", "Persen Keyakinan", "Nama Kegiatan","Tahun Aksi Mitigasi", "q2", 
-                          # "Jumlah Jawaban Dominan 2", "Persen Keyakinan 2", "Realisasi", "Jenis Objek", "Umur Objek", "Jumlah Objek yang Masih Hidup", "Rekomendasi", "Tingkat Keyakinan")
+      colnames(test) <- c("am_id", "Kontributor", "Keberadaan Aksi Mitigasi", "Jumlah Jawaban Dominan", "Persen Keyakinan", "Nama Kegiatan", "Tahun Aksi Mitigasi", "Keberadaan Objek/Item Aksi Mitigasi",
+                          "Jumlah Kontributor Dominan Q2", "Persen Keyakinan Q2", "Realisasi", "Jenis Objek", "Umur Tanaman", "Jumlah Pohon Tanaman yang Masih Hidup", "Rekomendasi", "Tingkat Keyakinan")
       test <- as.data.frame(test)
       
       c=rbind(c, test)
