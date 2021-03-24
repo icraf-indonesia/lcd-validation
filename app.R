@@ -129,7 +129,7 @@ server <- function(input, output, session) {
     if (USER$login == TRUE ) {
       navbarPage("SiVatif-PRKI", position = "static-top", collapsible = TRUE,
                  tabPanel("Beranda", icon = icon("home"),
-                          jumbotron(img(src="landingpage.png", width="100%"), " ", button = FALSE)
+                          jumbotron(img(src="landingpage-02.jpg", width="100%"), " ", button = FALSE)
                  ),
                  # tabPanel("Pengguna",
                  #          tabsetPanel(
