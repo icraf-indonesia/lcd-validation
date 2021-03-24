@@ -68,26 +68,24 @@ server <- function(input, output, session) {
   url_app <- paste0(kc_server_url,"api/v1/data/",form_app,"?format=csv")
   rawdata_app  <- GET(url_app,authenticate("vamprk2020","Icraf2019!"),progress())
   vamKoboData  <- read_csv(content(rawdata_app,"raw",encoding = "UTF-8"))
-  
-  saveRDS(registKoboData, "data/registKoboData")
-  saveRDS(vamKoboData, "data/vamKoboData")
-  
-  aksara_data <- read_excel("data/aksara-data.xlsx")
-  vamKoboData<-readRDS("data/vamKoboData")
   vamKoboData$`profil/email` <- tolower(vamKoboData$`profil/email`)
-  registKoboData <- readRDS("data/registKoboData")
   
-  credentials = data.frame(
-    username_id = registKoboData$`profil/email`,
-    passod   = sapply(c(rep("password", nrow(registKoboData))),password_store),
-    # permission  = c("basic", "advanced"), 
-    stringsAsFactors = F
-  )
+  koboData <- reactiveValues(regist = registKoboData, vam = vamKoboData)
+  aksara_data <- read_excel("data/aksara-data.xlsx")
+  
     ### Login Page ####
   login = FALSE
   USER <- reactiveValues(login = login)
   
   observe({ 
+    reg <- koboData$regist 
+    credentials <- data.frame(
+      username_id = reg$`profil/email`,
+      passod   = sapply(c(rep("password", nrow(reg))),password_store),
+      # permission  = c("basic", "advanced"),
+      stringsAsFactors = F
+    )
+    
     if (USER$login == FALSE) {
       if (!is.null(input$login)) {
         if (input$login > 0) {
@@ -260,7 +258,7 @@ server <- function(input, output, session) {
   ### MENU ANALISIS (Mobile Apps Version)####
   
   output$kontribusi <- renderValueBox({
-    kontribusi <- length(which(vamKoboData$`profil/email`==input$userName))
+    kontribusi <- length(which(koboData$vam$`profil/email`==input$userName))
     valueBox(
       paste0(kontribusi, " Kontribusi"), "Total Kontribusi", color="green"
     )
@@ -272,7 +270,7 @@ server <- function(input, output, session) {
     #   paste0(notValidateTotal, " Aksi Mitigasi"), "Total Aksi Belum Tervalidasi", color="yellow"
     # )
     data_aksara <- read_excel("data/aksara_table.xlsx")
-    kontribusi <- length(which(vamKoboData$`profil/email`==input$userName))
+    kontribusi <- length(which(koboData$vam$`profil/email`==input$userName))
     if (kontribusi - nrow(data_aksara)<0){
       notValidateTotal <- -1*(kontribusi - nrow(data_aksara))
     }else {
@@ -351,7 +349,7 @@ server <- function(input, output, session) {
   
   ### Grafik Kontrol Kualitas Data SiVatif ####
   output$QCgraph <- renderPlotly({
-    validation_table <- readRDS("data/vamKoboData")
+    validation_table <- koboData$vam
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
     validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "1", "Iya")
     validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "2", "Tidak")
@@ -475,7 +473,7 @@ server <- function(input, output, session) {
   ### MENU ANALISIS (Web Version) ####
   
   output$kontributor <- renderValueBox({
-    vamKoboData<-readRDS("data/vamKoboData")
+    vamKoboData<-koboData$vam
     vamKoboData$`profil/email` <- tolower(vamKoboData$`profil/email`)
     kontributorFreq <- unique(vamKoboData$`profil/email`)
     kontributor <- length(kontributorFreq)
@@ -485,7 +483,7 @@ server <- function(input, output, session) {
   })
   
   output$validator <- renderValueBox({
-    validatorTotal <- nrow(registKoboData)
+    validatorTotal <- nrow(koboData$regist)
     valueBox(
       paste0(validatorTotal, " Orang"), "Total Validator", color="aqua"
     )
@@ -530,7 +528,7 @@ server <- function(input, output, session) {
   #   ggplotly(kondisi) 
     
     output$conditionChart <- renderPlotly({
-      validation_table <- readRDS("data/vamKoboData")
+      validation_table <- koboData$vam
       admin_id <- unique(validation_table$`admin_data/id_aksi`)
       validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "1", "Iya")
       validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "2", "Tidak")
@@ -628,7 +626,7 @@ server <- function(input, output, session) {
       data_aksara <- read_excel("data/aksara_table.xlsx")
       
       ### TABEL HASIL VALIDASI ####
-      validation_table <- readRDS("data/vamKoboData")
+      validation_table <- koboData$vam
       admin_id <- unique(validation_table$`admin_data/id_aksi`)
       
       d=NULL
@@ -709,20 +707,20 @@ server <- function(input, output, session) {
   
   ## Peta Lokasi Aksi Mitigasi
   output$distributionMap <- renderLeaflet({
-    vamKoboData$`_geolocation.0` <- as.numeric(vamKoboData$`_geolocation.0`)
-    vamKoboData$`_geolocation.1` <- as.numeric(vamKoboData$`_geolocation.1`)
+    koboData$vam$`_geolocation.0` <- as.numeric(koboData$vam$`_geolocation.0`)
+    koboData$vam$`_geolocation.1` <- as.numeric(koboData$vam$`_geolocation.1`)
     # vamKoboData$aksi <- vamKoboData$`pertanyaan_kunci/detail_aksi/q1.1`
     # vamKoboData$aksi <- str_replace_all(aksi,"__", "_")
     # vamKoboData$aksi <- str_replace_all(aksi,"_", " ")
-    kobo_data <- subset(vamKoboData, select=c(`_geolocation.0`, `_geolocation.1`, `pertanyaan_kunci/detail_aksi/q1.1`))
+    kobo_data <- subset(koboData$vam, select=c(`_geolocation.0`, `_geolocation.1`, `pertanyaan_kunci/detail_aksi/q1.1`))
     colnames(kobo_data) = c("latitude", "longitude", "aksi")
     leaflet(data = kobo_data) %>% addTiles() %>% addMarkers(
-      popup= ~paste0(aksi, "</br>Provinsi: ", vamKoboData$`admin_data/provinces`, "</br>Tahun Aksi: ", vamKoboData$`pertanyaan_kunci/detail_aksi/q1.2`)
+      popup= ~paste0(aksi, "</br>Provinsi: ", koboData$vam$`admin_data/provinces`, "</br>Tahun Aksi: ", koboData$vam$`pertanyaan_kunci/detail_aksi/q1.2`)
     )
   })
   
   output$tabelQC <- renderDataTable({
-    validation_table <- readRDS("data/vamKoboData")
+    validation_table <- koboData$vam
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
     validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "1", "Iya")
     validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "2", "Tidak")
@@ -827,7 +825,7 @@ server <- function(input, output, session) {
     data_aksara <- read_excel("data/aksara_table.xlsx")
     
     ### TABEL HASIL VALIDASI ####
-    validation_table <- readRDS("data/vamKoboData")
+    validation_table <- koboData$vam
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
     
     hasil <- tables$dataQC
