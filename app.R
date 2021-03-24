@@ -55,16 +55,9 @@ form_app <- 623420 #App
 
 ### Registrasi ###
 url_reg <- paste0(kc_server_url,"api/v1/data/",form_reg,"?format=csv")
-rawdata_reg  <- GET(url_reg,authenticate("vamprk2020","Icraf2019!"),progress())
-registKoboData  <- read_csv(content(rawdata_reg,"raw",encoding = "UTF-8"))
 
 ### App ###
 url_app <- paste0(kc_server_url,"api/v1/data/",form_app,"?format=csv")
-rawdata_app  <- GET(url_app,authenticate("vamprk2020","Icraf2019!"),progress())
-vamKoboData  <- read_csv(content(rawdata_app,"raw",encoding = "UTF-8"))
-
-saveRDS(vamKoboData, "data/vamKoboData")
-saveRDS(registKoboData, "data/registKoboData")
 
 aksara_data <- read_excel("data/aksara-data.xlsx")
 vamKoboData<-readRDS("data/vamKoboData")
@@ -84,7 +77,18 @@ body <- dashboardBody(shinyjs::useShinyjs(), uiOutput("body"))
 ui<-dashboardPage(header, sidebar, body, skin = "black")
 
 server <- function(input, output, session) {
+
+  ### Registrasi ###
+  rawdata_reg  <- GET(url_reg,authenticate("vamprk2020","Icraf2019!"),progress())
+  registKoboData  <- read_csv(content(rawdata_reg,"raw",encoding = "UTF-8"))
+  saveRDS(registKoboData, "data/registKoboData")
+
+  ### App ###
+  rawdata_app  <- GET(url_app,authenticate("vamprk2020","Icraf2019!"),progress())
+  vamKoboData  <- read_csv(content(rawdata_app,"raw",encoding = "UTF-8"))
+  saveRDS(vamKoboData, "data/vamKoboData")
   
+    ### Login Page ####
   login = FALSE
   USER <- reactiveValues(login = login)
   
@@ -328,7 +332,7 @@ server <- function(input, output, session) {
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
             axis.text.x = element_text(size = 8, hjust = 1, angle = 90, face = "plain"),
             legend.text = element_text(size = 8))
-    ggplotly(valid_kabkot) %>% layout(legend = list(orientation = "h", x = 0.1, y = 0.3))
+    ggplotly(valid_kabkot) #%>% layout(legend = list(orientation = "h", x = 0.1, y = 0.3))
   })
   
   ## Peta Lokasi Aksi Mitigasi yang ada
