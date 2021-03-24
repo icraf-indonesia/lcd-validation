@@ -271,11 +271,16 @@ server <- function(input, output, session) {
     # )
     data_aksara <- read_excel("data/aksara_table.xlsx")
     kontribusi <- length(which(koboData$vam$`profil/email`==input$userName))
-    if (kontribusi - nrow(data_aksara)<0){
-      notValidateTotal <- -1*(kontribusi - nrow(data_aksara))
+    
+    d <- tables$dataValid
+    totalValidasi <- length(which(d$penilaian_validasi=="TERVALIDASI"))
+    
+    if (nrow(data_aksara) - kontribusi<0){
+      notValidateTotal <- -1*(nrow(data_aksara) - kontribusi)
     }else {
-      notValidateTotal <- kontribusi - nrow(data_aksara)
+      notValidateTotal <- nrow(data_aksara) - kontribusi
     }
+    
     valueBox(
       paste0(notValidateTotal, " Aksi Mitigasi"), "Total Aksi Belum Anda Validasi", color="red"
     )
@@ -343,7 +348,7 @@ server <- function(input, output, session) {
     gmaps <- as.data.frame(gmaps)
     
     final_data <- cbind(main_data, gmaps)
-    leaflet(data= final_data) %>% addTiles() %>% addMarkers(lng=~long,lat=~lat, popup=~paste0( "Nama Aksi: " , nama_kegiatan, "</br>Provinsi: ", 
+    leaflet(data= final_data) %>% addTiles() %>% addMarkers(lng=~long,lat=~lat, popup=~paste0("ID Aksi Mitigasi: ", id ,"</br>Nama Aksi: " , nama_kegiatan, "</br>Provinsi: ", 
                                                                                                nama_provinsi, "</br>Lokasi Titik: " ,"<a href='", gmaps, "' target='_blank' >klik disini</a>"))
   })
   
@@ -456,15 +461,29 @@ server <- function(input, output, session) {
     data_dummy$lat <- as.numeric(data_dummy$lat)
     data_dummy$long <- as.numeric(data_dummy$long)
     
-    main_data <- subset(data_dummy, select=c(id, lat, long, nama_kegiatan, tahun_pelaporan, nama_provinsi))
-    data_provinsi <- filter(main_data, main_data$nama_provinsi=="SUMATERA SELATAN")
-    data_provinsi<-data_provinsi[!is.na(data_provinsi$lat), ]
+    data_aksara <- read_excel("data/aksara_table.xlsx")
+    
+    # main_data <- subset(data_dummy, select=c(id, lat, long, nama_kegiatan, tahun_pelaporan, nama_provinsi))
+    # data_provinsi <- filter(main_data, main_data$nama_provinsi=="SUMATERA SELATAN")
+    # data_provinsi<-data_provinsi[!is.na(data_provinsi$lat), ]
+    
+    ### Data Dummy AKSARA ###
+    main_data <- subset(data_aksara, select=c(id, nama_kegiatan, tahun_pelaporan, nama_provinsi))
+    # data_provinsi <- filter(main_data, main_data$nama_provinsi=="SUMATERA SELATAN")
+    temp_data <- data_dummy[!is.na(data_dummy$lat), ]
+    data_provinsi <- cbind(main_data, temp_data$lat[1:6], temp_data$long[1:6])
     data_provinsi$kecamatan <- "Tidak ada data"
     data_provinsi$desa <- "Tidak ada data"
-    gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", data_provinsi$lat,",", data_provinsi$long)
+    
+    gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", data_provinsi$`temp_data$lat[1:6]`,",", data_provinsi$`temp_data$long[1:6]`)
+    # gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", data_provinsi$lat,",", data_provinsi$long)
+    
     data_provinsi$gmaps <- paste0("<a href='", gmaps, "' target='_blank'> Klik disini </a>")
-    data_provinsi$lat <- NULL
-    data_provinsi$long <- NULL
+    # data_provinsi$lat <- NULL
+    # data_provinsi$long <- NULL
+    data_provinsi$`temp_data$lat[1:6]` <- NULL
+    data_provinsi$`temp_data$long[1:6]` <- NULL
+    
     datatable(data_provinsi,  escape = FALSE) 
   })
 
@@ -676,6 +695,10 @@ server <- function(input, output, session) {
         d=rbind(d, final_tabel)
       }
       
+      d <- unique(d)
+      d <- data.frame(d)
+      rownames(d) <- NULL
+      
       kriteria_data <- count(d, "kondisi")
       colnames(kriteria_data) <- c("kondisi", "jumlah")
       d$kondisi <- factor(d$kondisi, levels = c("Sangat Baik", "Baik", "Kurang Baik", "Tidak Baik", "Sangat Tidak Baik"))
@@ -807,8 +830,8 @@ server <- function(input, output, session) {
       am_id <- unique(admin_id[i])
       
       test <- cbind(am_id, kontributor, q1, q1_maj, q1_perc, q1.1, q1.2, q2, q2_maj, q2_perc, q2.1, q2.2, q2.3, q2.4, q3, fin_valass)
-      colnames(test) <- c("am_id", "Kontributor", "Keberadaan Aksi Mitigasi", "Jumlah Jawaban Dominan", "Persen Keyakinan", "Nama Kegiatan", "Tahun Aksi Mitigasi", "Keberadaan Objek/Item Aksi Mitigasi",
-                          "Jumlah Kontributor Dominan Q2", "Persen Keyakinan Q2", "Realisasi", "Jenis Objek", "Umur Tanaman", "Jumlah Pohon Tanaman yang Masih Hidup", "Rekomendasi", "Tingkat Keyakinan")
+      # colnames(test) <- c("am_id", "Kontributor", "Keberadaan Aksi Mitigasi", "Jumlah Jawaban Dominan", "Persen Keyakinan", "Nama Kegiatan", "Tahun Aksi Mitigasi", "Keberadaan Objek/Item Aksi Mitigasi",
+                          # "Jumlah Kontributor Dominan Q2", "Persen Keyakinan Q2", "Realisasi", "Jenis Objek", "Umur Tanaman", "Jumlah Pohon Tanaman yang Masih Hidup", "Rekomendasi", "Tingkat Keyakinan")
       test <- as.data.frame(test)
       
       c=rbind(c, test)
@@ -816,7 +839,12 @@ server <- function(input, output, session) {
     
     hasil <- as.data.frame(c)
     tables$dataQC <- hasil
-    datatable(hasil, options = list(scrollX = TRUE))
+    
+    tabelHasil <-  as.data.frame(c)
+    colnames(tabelHasil) <- c("am_id", "Kontributor", "Keberadaan Aksi Mitigasi", "Jumlah Kontributor Dominan", "Persen Keyakinan", "Nama Kegiatan", "Tahun Aksi Mitigasi", "Keberadaan Objek/Item Aksi Mitigasi",
+    "Jumlah Kontributor Dominan Q2", "Persen Keyakinan Q2", "Realisasi", "Jenis Objek", "Umur Tanaman", "Jumlah Pohon Tanaman yang Masih Hidup", "Rekomendasi", "Tingkat Keyakinan")
+
+    datatable(tabelHasil, options = list(scrollX = TRUE))
   })
   
   output$tabelvalidasi <- renderDataTable({
@@ -871,12 +899,15 @@ server <- function(input, output, session) {
       
       am_id <- unique(admin_id[i])
       
-      final_tabel <-as.data.frame(cbind(am_id, aksara_nama, sivatif_nama, kesesuaian_nama, aksara_tahun, sivatif_tahun, kesesuaian_tahun, aksara_realisasi,
+      final_tabel <-as.data.frame(cbind(am_id, aksara_nama, sivatif_nama, kesesuaian_nama, aksara_tahun, sivatif_tahun, kesesuaian_tahun, aksara_realisasi, 
                                         sivatif_realisasi, kesesuaian_realisasi, aksara_jenis, sivatif_jenis, kesesuaian_jenis, aksara_jumlah, sivatif_jumlah,
                                         persen_selisih, kondisi, penilaian_validasi))
       d=rbind(d, final_tabel)
     }
     
+    d <- unique(d)
+    d <- data.frame(d)
+    rownames(d) <- NULL
     tables$dataValid <- d
     
     # datatable(d, escape = FALSE, options = list(searching = FALSE, info = FALSE), fillContainer = TRUE)
