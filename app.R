@@ -127,7 +127,7 @@ server <- function(input, output, session) {
   
   output$body <- renderUI({
     if (USER$login == TRUE ) {
-      navbarPage("SiVatif-PRKI", position = "static-top", collapsible = TRUE,
+      navbarPage("SiVaTif-PRKI", position = "static-top", collapsible = TRUE,
                  tabPanel("Beranda", icon = icon("home"),
                           jumbotron(img(src="landingpage-02.jpg", width="100%"), " ", button = FALSE)
                  ),
