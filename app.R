@@ -247,7 +247,7 @@ server <- function(input, output, session) {
                  #      Oleh karena itu, perlu adanya alat bantu untuk melakukan validasi aksi mitigasi yang dilaporkan.")
                  # ),
                  tabPanel("Cara Kontribusi", icon = icon("info-circle", lib = "font-awesome"),
-                          jumbotron(img(src="landingpage02.png", height="100%", width="100%"), " ", button = FALSE)
+                          jumbotron(img(src="landingpagelangkah02.png", height="100%", width="100%"), " ", button = FALSE)
                  )
       )
     }
