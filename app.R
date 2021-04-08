@@ -19,7 +19,7 @@ library(devtools)
 library(sodium)
 library(stringr)
 
-loginpage <- div(titlePanel ("SiVatif-PRKI"), id = "loginpage", style = "width: 500px; max-width: 100%; margin: 0 auto; padding: 20px;",
+loginpage <- div(titlePanel ("SiVaTif-PRKI"), id = "loginpage", style = "width: 500px; max-width: 100%; margin: 0 auto; padding: 20px;",
                  wellPanel(
                    tags$h2("Log In", class = "text-center", style = "padding-top: 0;color:#333; font-weight:600;"),
                    textInput("userName", placeholder="Email", label = tagList(icon("user"), "Email")),
@@ -132,6 +132,7 @@ server <- function(input, output, session) {
                             tabPanel("Lokasi Aksi Mitigasi",
                                      h2("Pilih Lokasi Aksi Mitigasi yang Anda Tuju"),
                                      leafletOutput("actionMaps"),
+                                     h3("Catatan: Jangan lupa untuk mencatat nomor ID Aksi Mitigasi Anda!"),
                                      br(),
                                      dataTableOutput("gmapstable")),
                             tabPanel("Dashboard",
@@ -176,12 +177,12 @@ server <- function(input, output, session) {
                           br(),
                           dataTableOutput("tabelvalidasi"),
                           br(),
-                          h2("Kontrol Kualitas Data SiVatif"),
+                          h2("Kontrol Kualitas Data SiVaTif"),
                           plotlyOutput("QCgraph2"),
                           dataTableOutput("tabelQC"),
                  ),
                  tabPanel("Cara Kontribusi", icon = icon("info-circle", lib = "font-awesome"),
-                          jumbotron(img(src="newlanding.png", height="100%", width="100%"), " ", button = FALSE)
+                          jumbotron(img(src="kontribusi.png", height="100%", width="100%"), " ", button = FALSE)
                  )
       )
     }
@@ -273,13 +274,28 @@ server <- function(input, output, session) {
   
   ## Peta Lokasi Aksi Mitigasi yang ada
   output$actionMaps <- renderLeaflet({
-    data_dummy <- read_excel("data/data_dummy_lahan.xlsx")
+    data_dummy <- read_excel("data/data_lokasi_rev.xlsx")
     
-    data_dummy$lat <- as.numeric(data_dummy$lat)
-    data_dummy$long <- as.numeric(data_dummy$long)
+    # data_aksara <- read_excel("data/aksara_table.xlsx")
     
-    main_data <- subset(data_dummy, select=c(id, lat, long, nama_provinsi, nama_kegiatan, sumberdata_tahun))
-    main_data <- na.omit(main_data)
+    # data_jabar <- read_excel("data/dummy_jabar.xlsx")
+    # final_jabar <- subset(data_jabar, select=c(id, nama_kegiatan, tahun_pelaporan, nama_provinsi, lat, long))
+    
+    ### Data Dummy AKSARA ###
+    # main_data <- subset(data_aksara, select=c(id, nama_kegiatan, tahun_pelaporan, nama_provinsi))
+    # temp_data <- data_dummy[!is.na(data_dummy$lat), ]
+    # data_provinsi <- cbind(main_data, temp_data$lat[1:6], temp_data$long[1:6])
+    # colnames(data_provinsi)[colnames(data_provinsi) == 'temp_data$lat[1:6]'] <- 'lat'
+    # colnames(data_provinsi)[colnames(data_provinsi) == 'temp_data$long[1:6]'] <- 'long'
+    
+    final_provinsi <- as.data.frame(data_dummy)
+    # final_provinsi <- rbind(data_provinsi, final_jabar)
+    
+    final_provinsi$lat <- as.numeric(final_provinsi$lat)
+    final_provinsi$long <- as.numeric(final_provinsi$long)
+    
+    main_data <- subset(final_provinsi, select=c(id, lat, long, nama_provinsi, nama_kegiatan, tahun_pelaporan))
+    # main_data <- na.omit(main_data)
     
     gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", main_data$lat,",", main_data$long)
     gmaps <- as.data.frame(gmaps)
@@ -291,7 +307,10 @@ server <- function(input, output, session) {
   
   ### Grafik Kontrol Kualitas Data SiVatif ####
   output$QCgraph <- renderPlotly({
+    # saveRDS(vamKoboData,"data/vamKoboData")
+    # validation_table <- readRDS("data/vamKoboData")
     validation_table <- koboData$vam
+    
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
     validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "1", "Iya")
     validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "2", "Tidak")
@@ -300,6 +319,18 @@ server <- function(input, output, session) {
     validation_table$`pertanyaan_kunci/detail_aksi/q2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2`)] <- 0
     validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "0" , "Tidak")
     validation_table$`pertanyaan_kunci/detail_aksi/recom`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/recom`)] <- "tidak tahu"
+    # validation_table$`pertanyaan_kunci/detail_aksi/q1.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q1.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.3`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.3` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.4`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.4` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`, "+" , "Tidak ada")
     
     c=NULL
     for (i in 1:length(admin_id)) {
@@ -374,42 +405,53 @@ server <- function(input, output, session) {
     grafikQC <- ggplot(hasil, aes(x=fin_valass))+
       geom_bar(stat="count", width=0.7, fill="purple")+
       theme_minimal() + 
-      labs(title="Kontrol Kualitas Data Sivatif", x="Kualitas", y = "Jumlah Aksi")
+      labs(title="Kontrol Kualitas Data SivaTif", x="Kualitas", y = "Jumlah Aksi")
     ggplotly(grafikQC) 
   })
   
   ### Tabel Link Google Maps ####
   output$gmapstable <- renderDataTable({
-    data_dummy <- read_excel("data/data_dummy_lahan.xlsx")
-    data_dummy$lat <- as.numeric(data_dummy$lat)
-    data_dummy$long <- as.numeric(data_dummy$long)
+    ###Kodingan Awal ####
+    # data_dummy <- read_excel("data/data_dummy_lahan.xlsx")
+    # data_dummy$lat <- as.numeric(data_dummy$lat)
+    # data_dummy$long <- as.numeric(data_dummy$long)
+    # 
+    # data_aksara <- read_excel("data/aksara_table.xlsx")
+    # 
+    # 
+    # # data_jabar <- read_excel("data/dummy_jabar.xlsx")
+    # # final_jabar <- subset(data_jabar, select=c(id, nama_kegiatan, tahun_pelaporan, nama_provinsi, lat, long))
+    # # main_data <- subset(data_dummy, select=c(id, lat, long, nama_kegiatan, tahun_pelaporan, nama_provinsi))
+    # # data_provinsi <- filter(main_data, main_data$nama_provinsi=="SUMATERA SELATAN")
+    # # data_provinsi<-data_provinsi[!is.na(data_provinsi$lat), ]
+    # 
+    # ### Data Dummy AKSARA ###
+    # main_data <- subset(data_aksara, select=c(id, nama_kegiatan, tahun_pelaporan, nama_provinsi))
+    # # data_provinsi <- filter(main_data, main_data$nama_provinsi=="SUMATERA SELATAN")
+    # temp_data <- data_dummy[!is.na(data_dummy$lat), ]
+    # data_provinsi <- cbind(main_data, temp_data$lat[1:6], temp_data$long[1:6])
+    # colnames(data_provinsi)[colnames(data_provinsi) == 'temp_data$lat[1:6]'] <- 'lat'
+    # colnames(data_provinsi)[colnames(data_provinsi) == 'temp_data$long[1:6]'] <- 'long'
     
-    data_aksara <- read_excel("data/aksara_table.xlsx")
+    data_aksara <- read_excel("data/data_lokasi_rev.xlsx")
+    main_data <- subset(data_aksara, select=c(id, lat, long, nama_kegiatan, tahun_pelaporan, nama_provinsi))
+    final_provinsi <- as.data.frame(main_data)
+
     
-    # main_data <- subset(data_dummy, select=c(id, lat, long, nama_kegiatan, tahun_pelaporan, nama_provinsi))
-    # data_provinsi <- filter(main_data, main_data$nama_provinsi=="SUMATERA SELATAN")
-    # data_provinsi<-data_provinsi[!is.na(data_provinsi$lat), ]
+    # final_provinsi <- rbind(data_provinsi, final_jabar)
+    final_provinsi$kabkot <- "Tidak ada data"
+    final_provinsi$kecamatan <- "Tidak ada data"
+    final_provinsi$desa <- "Tidak ada data"
     
-    ### Data Dummy AKSARA ###
-    main_data <- subset(data_aksara, select=c(id, nama_kegiatan, tahun_pelaporan, nama_provinsi))
-    # data_provinsi <- filter(main_data, main_data$nama_provinsi=="SUMATERA SELATAN")
-    temp_data <- data_dummy[!is.na(data_dummy$lat), ]
-    data_provinsi <- cbind(main_data, temp_data$lat[1:6], temp_data$long[1:6])
-    data_provinsi$kabkot <- "Tidak ada data"
-    data_provinsi$kecamatan <- "Tidak ada data"
-    data_provinsi$desa <- "Tidak ada data"
-    
-    gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", data_provinsi$`temp_data$lat[1:6]`,",", data_provinsi$`temp_data$long[1:6]`)
+    gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", final_provinsi$lat[1:nrow(final_provinsi)],",", final_provinsi$long[1:nrow(final_provinsi)])
     # gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", data_provinsi$lat,",", data_provinsi$long)
     
-    data_provinsi$gmaps <- paste0("<a href='", gmaps, "' target='_blank'> Klik disini </a>")
-    # data_provinsi$lat <- NULL
-    # data_provinsi$long <- NULL
-    data_provinsi$`temp_data$lat[1:6]` <- NULL
-    data_provinsi$`temp_data$long[1:6]` <- NULL
+    final_provinsi$gmaps <- paste0("<a href='", gmaps, "' target='_blank'> Klik disini </a>")
+    final_provinsi$lat <- NULL
+    final_provinsi$long <- NULL
     
     colnamesLokasi <- read_excel("data/colnames_sivatif.xlsx", sheet = "lokasi")
-    colnames(data_provinsi) <- colnamesLokasi$`Nama kolom`
+    colnames(final_provinsi) <- colnamesLokasi$`Nama kolom`
     
     # datatable(data_provinsi,  escape = FALSE) 
 
@@ -423,14 +465,12 @@ server <- function(input, output, session) {
       "}"
     )
     
-    datatable(data_provinsi, rownames = FALSE, escape = FALSE,
+    datatable(final_provinsi, rownames = FALSE, escape = FALSE,
               options = list(
-                headerCallback = JS(headerCallback)
+                headerCallback = JS(headerCallback), scrollX = TRUE
               )
     )
   })
-  
-  
   
   ### MENU ANALISIS (Web Version) ####
   
@@ -479,6 +519,18 @@ server <- function(input, output, session) {
     validation_table$`pertanyaan_kunci/detail_aksi/q2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2`)] <- 0
     validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "0" , "Tidak")
     validation_table$`pertanyaan_kunci/detail_aksi/recom`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/recom`)] <- "tidak tahu"
+    # validation_table$`pertanyaan_kunci/detail_aksi/q1.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q1.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.3`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.3` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.4`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.4` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`, "+" , "Tidak ada")
     
     c=NULL
     for (i in 1:length(admin_id)) {
@@ -626,10 +678,10 @@ server <- function(input, output, session) {
     # vamKoboData$aksi <- vamKoboData$`pertanyaan_kunci/detail_aksi/q1.1`
     # vamKoboData$aksi <- str_replace_all(aksi,"__", "_")
     # vamKoboData$aksi <- str_replace_all(aksi,"_", " ")
-    kobo_data <- subset(koboData$vam, select=c(`_geolocation.0`, `_geolocation.1`, `pertanyaan_kunci/detail_aksi/q1.1`))
-    colnames(kobo_data) = c("latitude", "longitude", "aksi")
+    kobo_data <- subset(koboData$vam, select=c(`admin_data/id_aksi`, `_geolocation.0`, `_geolocation.1`, `pertanyaan_kunci/detail_aksi/q1.1`))
+    colnames(kobo_data) = c("id","latitude", "longitude", "aksi")
     leaflet(data = kobo_data) %>% addTiles() %>% addMarkers(
-      popup= ~paste0(aksi, "</br>Provinsi: ", koboData$vam$`admin_data/provinces`, "</br>Tahun Aksi: ", koboData$vam$`pertanyaan_kunci/detail_aksi/q1.2`)
+      popup= ~paste0("</br>ID Aksi Mitigasi: ", id,"</br>Nama Aksi Mitigasi: ", aksi, "</br>Provinsi: ", koboData$vam$`admin_data/provinces`, "</br>Tahun Aksi: ", koboData$vam$`pertanyaan_kunci/detail_aksi/q1.2`)
     )
   })
   
@@ -644,6 +696,18 @@ server <- function(input, output, session) {
     validation_table$`pertanyaan_kunci/detail_aksi/q2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2`)] <- 0
     validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "0" , "Tidak")
     validation_table$`pertanyaan_kunci/detail_aksi/recom`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/recom`)] <- "tidak tahu"
+    # validation_table$`pertanyaan_kunci/detail_aksi/q1.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q1.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.3`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.3` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.4`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.4` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`, "+" , "Tidak ada")
     
     c=NULL
     for (i in 1:length(admin_id)) {
@@ -718,7 +782,7 @@ server <- function(input, output, session) {
     grafikQC <- ggplot(hasil, aes(x=fin_valass))+
       geom_bar(stat="count", width=0.7, fill="purple")+
       theme_minimal() + 
-      labs(title="Kontrol Kualitas Data Sivatif", x="Kualitas", y = "Jumlah Aksi")
+      labs(title="Kontrol Kualitas Data SivaTif", x="Kualitas", y = "Jumlah Aksi")
     ggplotly(grafikQC) 
   })
   
@@ -732,6 +796,18 @@ server <- function(input, output, session) {
     validation_table$`pertanyaan_kunci/detail_aksi/q2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2`)] <- 0
     validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "0" , "Tidak")
     validation_table$`pertanyaan_kunci/detail_aksi/recom`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/recom`)] <- "tidak tahu"
+    # validation_table$`pertanyaan_kunci/detail_aksi/q1.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q1.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.3`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.3` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`, "+" , "Tidak ada")
+    # validation_table$`pertanyaan_kunci/detail_aksi/q2.4`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`)] <- "Tidak ada"
+    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.4` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`, "+" , "Tidak ada")
     
     c=NULL
     for (i in 1:length(admin_id)) {

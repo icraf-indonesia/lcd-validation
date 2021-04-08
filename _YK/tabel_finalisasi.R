@@ -151,6 +151,38 @@ for (i in 1:length(admin_id)) {
 
 datatable(d)
 
+d<- unique(d)
+
+validation_table$`_geolocation.0` <- as.numeric(validation_table$`_geolocation.0`)
+validation_table$`_geolocation.1` <- as.numeric(validation_table$`_geolocation.1`)
+# vamKoboData$aksi <- vamKoboData$`pertanyaan_kunci/detail_aksi/q1.1`
+# vamKoboData$aksi <- str_replace_all(aksi,"__", "_")
+# vamKoboData$aksi <- str_replace_all(aksi,"_", " ")
+kobo_data <- subset(validation_table, select=c(`_geolocation.0`, `_geolocation.1`, `pertanyaan_kunci/detail_aksi/q1.1`))
+colnames(kobo_data) = c("latitude", "longitude", "aksi")
+
+getColor <- function(d) {
+  sapply(d$penilaian_validasi, function(penilaian_validasi) {
+    if(penilaian_validasi == "TERVALIDASI") {
+      "green"
+    } else if(penilaian_validasi == "PERLU DIREVISI") {
+      "orange"
+    } else {
+      "red"
+    } })
+}
+
+icons <- awesomeIcons(
+  icon = 'document-text',
+  iconColor = 'black',
+  library = 'ion',
+  markerColor = getColor(d)
+)
+
+leaflet(d) %>% addTiles() %>%
+  addAwesomeMarkers(~longitude, ~latitude, icon=icons, label=~as.character(penilaian_validasi))
+
+
 ### Testing ####
 uji <- c("YES", "YES", "NO", "NO", "YES", "NO")
 test <- table(uji)
