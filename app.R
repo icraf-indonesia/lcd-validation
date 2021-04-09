@@ -274,6 +274,7 @@ server <- function(input, output, session) {
   
   ## Peta Lokasi Aksi Mitigasi yang ada
   output$actionMaps <- renderLeaflet({
+    # NOTE #1: need to connect to AKSARA db ####
     data_dummy <- read_excel("data/data_lokasi_rev.xlsx")
     
     # data_aksara <- read_excel("data/aksara_table.xlsx")
@@ -319,18 +320,6 @@ server <- function(input, output, session) {
     validation_table$`pertanyaan_kunci/detail_aksi/q2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2`)] <- 0
     validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "0" , "Tidak")
     validation_table$`pertanyaan_kunci/detail_aksi/recom`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/recom`)] <- "tidak tahu"
-    # validation_table$`pertanyaan_kunci/detail_aksi/q1.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q1.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.3`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.3` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.4`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.4` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`, "+" , "Tidak ada")
     
     c=NULL
     for (i in 1:length(admin_id)) {
@@ -350,10 +339,12 @@ server <- function(input, output, session) {
       q1_perc <- q1_maj/nrow(data) * 100
       
       table_q1.1 <- table(data$`pertanyaan_kunci/detail_aksi/q1.1`)
-      q1.1 <- names(table_q1.1[table_q1.1==max(table_q1.1)])
+      q1.1 <- names(table_q1.1[table_q1.1==max(table_q1.1)]) 
+      q1.1 <- ifelse(is.null(q1.1), "Tidak tahu", q1.1)
       
       table_q1.2 <- table(data$`pertanyaan_kunci/detail_aksi/q1.2`)
-      q1.2 <- names(table_q1.2[table_q1.2==max(table_q1.2)])
+      q1.2 <- names(table_q1.2[table_q1.2==max(table_q1.2)]) 
+      q1.2 <- ifelse(is.null(q1.2), "0", q1.2)
       
       table_q2 <- table(data$`pertanyaan_kunci/detail_aksi/q2`)
       q2 <- names(table_q2[table_q2==max(table_q2)])
@@ -433,6 +424,7 @@ server <- function(input, output, session) {
     # colnames(data_provinsi)[colnames(data_provinsi) == 'temp_data$lat[1:6]'] <- 'lat'
     # colnames(data_provinsi)[colnames(data_provinsi) == 'temp_data$long[1:6]'] <- 'long'
     
+    # NOTE #2: need to connect to AKSARA db ####
     data_aksara <- read_excel("data/data_lokasi_rev.xlsx")
     main_data <- subset(data_aksara, select=c(id, lat, long, nama_kegiatan, tahun_pelaporan, nama_provinsi))
     final_provinsi <- as.data.frame(main_data)
@@ -551,9 +543,11 @@ server <- function(input, output, session) {
       
       table_q1.1 <- table(data$`pertanyaan_kunci/detail_aksi/q1.1`)
       q1.1 <- names(table_q1.1[table_q1.1==max(table_q1.1)])
+      q1.1 <- ifelse(is.null(q1.1), "Tidak tahu", q1.1)
       
       table_q1.2 <- table(data$`pertanyaan_kunci/detail_aksi/q1.2`)
       q1.2 <- names(table_q1.2[table_q1.2==max(table_q1.2)])
+      q1.2 <- ifelse(is.null(q1.2), "0", q1.2)
       
       table_q2 <- table(data$`pertanyaan_kunci/detail_aksi/q2`)
       q2 <- names(table_q2[table_q2==max(table_q2)])
@@ -696,18 +690,6 @@ server <- function(input, output, session) {
     validation_table$`pertanyaan_kunci/detail_aksi/q2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2`)] <- 0
     validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "0" , "Tidak")
     validation_table$`pertanyaan_kunci/detail_aksi/recom`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/recom`)] <- "tidak tahu"
-    # validation_table$`pertanyaan_kunci/detail_aksi/q1.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q1.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.3`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.3` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.4`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.4` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`, "+" , "Tidak ada")
     
     c=NULL
     for (i in 1:length(admin_id)) {
@@ -728,9 +710,11 @@ server <- function(input, output, session) {
       
       table_q1.1 <- table(data$`pertanyaan_kunci/detail_aksi/q1.1`)
       q1.1 <- names(table_q1.1[table_q1.1==max(table_q1.1)])
+      q1.1 <- ifelse(is.null(q1.1), "Tidak tahu", q1.1)
       
       table_q1.2 <- table(data$`pertanyaan_kunci/detail_aksi/q1.2`)
       q1.2 <- names(table_q1.2[table_q1.2==max(table_q1.2)])
+      q1.2 <- ifelse(is.null(q1.2), "0", q1.2)
       
       table_q2 <- table(data$`pertanyaan_kunci/detail_aksi/q2`)
       q2 <- names(table_q2[table_q2==max(table_q2)])
@@ -796,18 +780,6 @@ server <- function(input, output, session) {
     validation_table$`pertanyaan_kunci/detail_aksi/q2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2`)] <- 0
     validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "0" , "Tidak")
     validation_table$`pertanyaan_kunci/detail_aksi/recom`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/recom`)] <- "tidak tahu"
-    # validation_table$`pertanyaan_kunci/detail_aksi/q1.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.1`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q1.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q1.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1.2`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.1`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.1`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.2`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.3`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.3` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.3`, "+" , "Tidak ada")
-    # validation_table$`pertanyaan_kunci/detail_aksi/q2.4`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`)] <- "Tidak ada"
-    # # validation_table$`pertanyaan_kunci/detail_aksi/q2.4` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2.4`, "+" , "Tidak ada")
     
     c=NULL
     for (i in 1:length(admin_id)) {
@@ -828,9 +800,11 @@ server <- function(input, output, session) {
       
       table_q1.1 <- table(data$`pertanyaan_kunci/detail_aksi/q1.1`)
       q1.1 <- names(table_q1.1[table_q1.1==max(table_q1.1)])
+      q1.1 <- ifelse(is.null(q1.1), "Tidak tahu", q1.1)
       
       table_q1.2 <- table(data$`pertanyaan_kunci/detail_aksi/q1.2`)
       q1.2 <- names(table_q1.2[table_q1.2==max(table_q1.2)])
+      q1.2 <- ifelse(is.null(q1.2), "0", q1.2)
       
       table_q2 <- table(data$`pertanyaan_kunci/detail_aksi/q2`)
       q2 <- names(table_q2[table_q2==max(table_q2)])
