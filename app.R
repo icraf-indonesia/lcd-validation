@@ -197,7 +197,7 @@ server <- function(input, output, session) {
     }
   })
   
-  tables <- reactiveValues(dataQC=data.frame(), dataValid=data.frame())
+  tables <- reactiveValues(dataQC=data.frame(), dataValid=data.frame(), allValid=data.frame(), allQC=data.frame())
   
   ### MENU PENGGUNA (Mobile Apps Version)####
   
@@ -212,14 +212,152 @@ server <- function(input, output, session) {
     data_aksara <- read_excel("data/aksara_table.xlsx")
     kontribusi <- length(which(koboData$vam$`profil/email`==input$userName))
     
-    d <- tables$dataValid
-    totalValidasi <- length(which(d$penilaian_validasi=="TERVALIDASI"))
+    ### Initiate Table: QC ####
+    validation_table <- koboData$vam
+
+    admin_id <- unique(validation_table$`admin_data/id_aksi`)
+    validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "1", "Iya")
+    validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "2", "Tidak")
+    validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "1", "Iya")
+    validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "2", "Tidak")
+    validation_table$`pertanyaan_kunci/detail_aksi/q2`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/q2`)] <- 0
+    validation_table$`pertanyaan_kunci/detail_aksi/q2` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q2`, "0" , "Tidak")
+    validation_table$`pertanyaan_kunci/detail_aksi/recom`[is.na(validation_table$`pertanyaan_kunci/detail_aksi/recom`)] <- "tidak ada"
     
-    if (nrow(data_aksara) - kontribusi<0){
-      notValidateTotal <- -1*(nrow(data_aksara) - kontribusi)
-    }else {
-      notValidateTotal <- nrow(data_aksara) - kontribusi
+    c=NULL
+    for (i in 1:length(admin_id)) {
+      data <- filter(validation_table, `admin_data/id_aksi`==admin_id[i])
+      
+      kontributor <- length(which(validation_table$`admin_data/id_aksi`==admin_id[i]))
+      
+      table_q1 <- table(data$`pertanyaan_kunci/detail_aksi/q1`)
+      q1 <- names(table_q1[table_q1==max(table_q1)])
+      if(length(q1)==2){
+        q1_maj <- length(which(data$`pertanyaan_kunci/detail_aksi/q1`=="Tidak"))
+        q1 <- "Tidak"
+      } else {
+        q1_maj <- length(which(data$`pertanyaan_kunci/detail_aksi/q1`==q1))  
+      }
+      # q1_maj <- nrow(data[data$q1 == q1,])
+      q1_perc <- q1_maj/nrow(data) * 100
+      
+      table_q1.1 <- table(data$`pertanyaan_kunci/detail_aksi/q1.1`)
+      q1.1 <- names(table_q1.1[table_q1.1==max(table_q1.1)]) 
+      q1.1 <- ifelse(is.null(q1.1), "Tidak tahu", q1.1)
+      
+      table_q1.2 <- table(data$`pertanyaan_kunci/detail_aksi/q1.2`)
+      q1.2 <- names(table_q1.2[table_q1.2==max(table_q1.2)]) 
+      q1.2 <- ifelse(is.null(q1.2), "0", q1.2)
+      
+      table_q2 <- table(data$`pertanyaan_kunci/detail_aksi/q2`)
+      q2 <- names(table_q2[table_q2==max(table_q2)])
+      if(length(q2)==2){
+        q2_maj <- length(which(data$`pertanyaan_kunci/detail_aksi/q2`=="Tidak"))
+        q2 <- "Tidak"
+      } else {
+        q2_maj <- length(which(data$`pertanyaan_kunci/detail_aksi/q2`==q2))  
+      }
+      q2_perc <- q2_maj/nrow(data) * 100
+      
+      if (q1=="Tidak" | q2=="Tidak"){
+        q2.1 <- 0
+        q2.2 <- "Tidak tahu"
+        q2.3 <- 0
+        q2.4 <- 0
+      } else {
+        table_q2.1 <- table(data$`pertanyaan_kunci/detail_aksi/q2.1`)
+        q2.1 <- names(table_q2.1[table_q2.1==max(table_q2.1)])
+        
+        table_q2.2 <- table(data$`pertanyaan_kunci/detail_aksi/q2.2`)
+        q2.2 <- names(table_q2.2[table_q2.2==max(table_q2.2)])
+        
+        table_q2.3 <- table(data$`pertanyaan_kunci/detail_aksi/q2.3`)
+        q2.3 <- names(table_q2.3[table_q2.3==max(table_q2.3)])
+        
+        table_q2.4 <- table(data$`pertanyaan_kunci/detail_aksi/q2.4`)
+        q2.4 <- names(table_q2.4[table_q2.4==max(table_q2.4)])
+      }
+      
+      unique_q3 <- tolower(data$`pertanyaan_kunci/detail_aksi/recom`)
+      q3 <- str_c(unique_q3, collapse = "; ")
+      
+      fin_valass <- "Belum ada penilaian"
+      fin_valass <- ifelse(q1_perc>=80 , "Tinggi", fin_valass)
+      fin_valass <- ifelse(q1_perc<80 & q1_perc>=60 , "Sedang", fin_valass)
+      fin_valass <- ifelse(q1_perc<60 , "Rendah", fin_valass)
+      
+      am_id <- unique(admin_id[i])
+      
+      test <- cbind(am_id, kontributor, q1, q1_maj, q1_perc, q1.1, q1.2, q2, q2_maj, q2_perc, q2.1, q2.2, q2.3, q2.4, q3, fin_valass)
+      test <- as.data.frame(test)
+      
+      c=rbind(c, test)
     }
+    
+    hasil <- as.data.frame(c)
+    ### End Table: QC ###
+    
+    ### Initiate Table: Validasi ####
+    admin_id <- unique(validation_table$`admin_data/id_aksi`)
+    
+    d=NULL
+    for (i in 1:length(admin_id)) {
+      tabel_aksara <- filter(data_aksara, id==admin_id[i])
+      tbl <- filter(hasil, am_id==admin_id[i])
+      kontributor <- length(which(validation_table$`admin_data/id_aksi`==admin_id[i]))
+      
+      aksara_nama <- tabel_aksara$nama_kegiatan
+      sivatif_nama <- as.character(tbl$q1.1)
+      kesesuaian_nama <- "Tidak Sesuai"
+      kesesuaian_nama <- ifelse(sivatif_nama==aksara_nama, "Sesuai", kesesuaian_nama)
+      
+      aksara_tahun <- tabel_aksara$tahun_pelaporan
+      sivatif_tahun <- as.numeric(as.character(tbl$q1.2))
+      kesesuaian_tahun <- "Tidak Sesuai"
+      kesesuaian_tahun <- ifelse(sivatif_tahun==aksara_tahun, "Sesuai", kesesuaian_tahun)
+      
+      aksara_realisasi <- tabel_aksara$realisasi
+      sivatif_realisasi <- as.numeric(as.character(tbl$q2.1))
+      kesesuaian_realisasi <- "Tidak Sesuai"
+      kesesuaian_realisasi <- ifelse(sivatif_realisasi==aksara_realisasi, "Sesuai", kesesuaian_realisasi)
+      
+      aksara_jenis <- tabel_aksara$jenis_pohon_lain
+      sivatif_jenis <- as.character(tbl$q2.2)
+      kesesuaian_jenis <- "Tidak Sesuai"
+      kesesuaian_jenis <- ifelse(sivatif_jenis==aksara_jenis, "Sesuai", kesesuaian_jenis)
+      
+      aksara_jumlah <- tabel_aksara$jumlah_pohon_tanaman_yang_masih_hidup
+      sivatif_jumlah <- as.numeric(as.character(tbl$q2.4))
+      persen_selisih <- (sivatif_jumlah / aksara_jumlah)
+      kondisi <- "Sangat Tidak Baik"
+      kondisi <- ifelse(persen_selisih>=0.8 , "Sangat Baik", kondisi)
+      kondisi <- ifelse(persen_selisih<0.8 & persen_selisih>=0.6 , "Baik", kondisi)
+      kondisi <- ifelse(persen_selisih<0.6 & persen_selisih>=0.4 , "Kurang Baik", kondisi)
+      kondisi <- ifelse(persen_selisih<0.4 & persen_selisih>=0.2 , "Tidak Baik", kondisi)
+      penilaian_validasi <- "BELUM DIVALIDASI"
+      penilaian_validasi <- ifelse(kontributor >= 5 & hasil[which(hasil$am_id==admin_id[i]),]$fin_valass=="Tinggi" & (kesesuaian_nama=="Tidak Sesuai" | kesesuaian_tahun=="Tidak Sesuai" | kesesuaian_realisasi=="Tidak Sesuai" | kesesuaian_jenis=="Tidak Sesuai" | persen_selisih < 0.6), "PERLU DIREVISI", penilaian_validasi)
+      penilaian_validasi <- ifelse(kontributor >= 5 & hasil[which(hasil$am_id==admin_id[i]),]$fin_valass=="Tinggi" & kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6, "TERVALIDASI", penilaian_validasi)
+      
+      am_id <- unique(admin_id[i])
+      
+      final_tabel <-as.data.frame(cbind(am_id, aksara_nama, sivatif_nama, kesesuaian_nama, aksara_tahun, sivatif_tahun, kesesuaian_tahun, aksara_realisasi, 
+                                        sivatif_realisasi, kesesuaian_realisasi, aksara_jenis, sivatif_jenis, kesesuaian_jenis, aksara_jumlah, sivatif_jumlah,
+                                        persen_selisih, kondisi, penilaian_validasi))
+      d=rbind(d, final_tabel)
+    }
+    
+    data_validasi <- data.frame(d)
+    totalTervalidasi <- length(which(data_validasi$penilaian_validasi=="TERVALIDASI"))
+    totalRevisi <- length(which(data_validasi$penilaian_validasi=="PERLU REVISI"))
+    ### End Table: Validasi ####
+    
+    notValidateTotal <- nrow(data_aksara) - kontribusi - (totalTervalidasi + totalRevisi)
+    
+    # if (nrow(data_aksara) - kontribusi<0){
+    #   notValidateTotal <- -1*(nrow(data_aksara) - kontribusi)
+    # }else {
+    #   notValidateTotal <- nrow(data_aksara) - kontribusi - (totalTervalidasi + totalRevisi)
+    # }
     
     valueBox(
       paste0(notValidateTotal, " Aksi Mitigasi"), "Total Aksi Belum Anda Validasi", color="red"
@@ -402,6 +540,20 @@ server <- function(input, output, session) {
     final_provinsi$kecamatan <- "Tidak ada data"
     final_provinsi$desa <- "Tidak ada data"
     
+    # data_lokasi = NULL
+    # final_provinsi$lat[is.na(final_provinsi$lat)] <- 0
+    # final_provinsi$long[is.na(final_provinsi$long)] <- 0
+    
+    # for (i in nrow(final_provinsi)){
+    #   if (final_provinsi$lat[i]!=0){
+    #     gmaps[i] <- paste0("https://www.google.com/maps/search/?api=1&query=", final_provinsi$lat[i],",", final_provinsi$long[i])
+    #   } else{
+    #     gmaps[i] <- "Koordinat tidak tersedia"
+    #   }
+    #   tabel <- cbind(final_provinsi$id, final_provinsi$lat, final_provinsi$long, final_provinsi$nama_kegiatan, final_provinsi$nama_provinsi, gmaps)
+    #   data_lokasi <- rbind(data_lokasi, tabel)
+    # }
+    
     gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", final_provinsi$lat[1:nrow(final_provinsi)],",", final_provinsi$long[1:nrow(final_provinsi)])
     # gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", data_provinsi$lat,",", data_provinsi$long)
     
@@ -450,7 +602,7 @@ server <- function(input, output, session) {
   
   
   output$validate <- renderValueBox({
-    d <- tables$dataValid
+    d <- tables$allValid
     validateTotal <- length(which(d$penilaian_validasi=="TERVALIDASI"))
     valueBox(
       paste0(validateTotal, " Aksi Mitigasi"), "Total Aksi Tervalidasi", color="green"
@@ -458,7 +610,7 @@ server <- function(input, output, session) {
   })
   
   output$notValidate2 <- renderValueBox({
-    d <- tables$dataValid
+    d <- tables$allValid
     notValidateTotal <- length(which(d$penilaian_validasi=="PERLU DIREVISI"))
     valueBox(
       paste0(notValidateTotal, " Aksi Mitigasi"), "Total Aksi Perlu Direvisi", color="maroon"
@@ -732,9 +884,9 @@ server <- function(input, output, session) {
   })
   
   output$tabelQC <- renderDataTable({
-    # validation_table <- koboData$vam
-    initiateTable <- koboData$vam
-    validation_table <- filter(initiateTable, initiateTable$`admin_data/provinces`==input$dataProvince2)
+    validation_table <- koboData$vam
+    # initiateTable <- koboData$vam
+    # validation_table <- filter(initiateTable, initiateTable$`admin_data/provinces`==input$dataProvince2)
     
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
     validation_table$`pertanyaan_kunci/detail_aksi/q1` <- str_replace_all(validation_table$`pertanyaan_kunci/detail_aksi/q1`, "1", "Iya")
@@ -807,18 +959,28 @@ server <- function(input, output, session) {
       fin_valass <- ifelse(q1_perc<80 & q1_perc>=60 , "Sedang", fin_valass)
       fin_valass <- ifelse(q1_perc<60 , "Rendah", fin_valass)
       
+      provinsi <- unique(data$`admin_data/provinces`)
+      
       am_id <- unique(admin_id[i])
       
-      test <- cbind(am_id, kontributor, q1, q1_maj, q1_perc, q1.1, q1.2, q2, q2_maj, q2_perc, q2.1, q2.2, q2.3, q2.4, q3, fin_valass)
+      test <- cbind(provinsi, am_id, kontributor, q1, q1_maj, q1_perc, q1.1, q1.2, q2, q2_maj, q2_perc, q2.1, q2.2, q2.3, q2.4, q3, fin_valass)
       test <- as.data.frame(test)
       
       c=rbind(c, test)
     }
     
     hasil <- as.data.frame(c)
-    tables$dataQC <- hasil
+    tables$allQC <- hasil
     
-    tabelHasil <-  as.data.frame(hasil)
+    # all_result <- hasil
+    # all_result$provinsi <- NULL
+    # tables$allQC <- all_result
+    
+    hasil_provinsi <- filter(hasil, hasil$provinsi==input$dataProvince2)
+    hasil_provinsi$provinsi <- NULL
+    tables$dataQC <- hasil_provinsi
+    
+    tabelHasil <-  as.data.frame(hasil_provinsi)
     tabelHasil$q1_maj <- NULL
     tabelHasil$q2_maj <- NULL
     colnamesQC <- read_excel("data/colnames_sivatif.xlsx", sheet = "QC")
@@ -876,13 +1038,13 @@ server <- function(input, output, session) {
     data_aksara <- read_excel("data/aksara_table.xlsx")
     
     ### TABEL HASIL VALIDASI ####
-    # validation_table <- koboData$vam
-    initiateTable <- koboData$vam
-    validation_table <- filter(initiateTable, initiateTable$`admin_data/provinces`==input$dataProvince2)
+    validation_table <- koboData$vam
+    # initiateTable <- koboData$vam
+    # validation_table <- filter(initiateTable, initiateTable$`admin_data/provinces`==input$dataProvince2)
     
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
     
-    hasil <- tables$dataQC
+    hasil <- tables$allQC
     
     d=NULL
     for (i in 1:length(admin_id)) {
@@ -923,19 +1085,23 @@ server <- function(input, output, session) {
       penilaian_validasi <- ifelse(kontributor >= 5 & hasil[which(hasil$am_id==admin_id[i]),]$fin_valass=="Tinggi" & kesesuaian_nama=="Sesuai" & kesesuaian_tahun=="Sesuai" & kesesuaian_realisasi=="Sesuai" & kesesuaian_jenis=="Sesuai" & persen_selisih>=0.6, "TERVALIDASI", penilaian_validasi)
       
       am_id <- unique(admin_id[i])
+      provinsi <- unique(tbl$provinsi)
       
-      final_tabel <-as.data.frame(cbind(am_id, aksara_nama, sivatif_nama, kesesuaian_nama, aksara_tahun, sivatif_tahun, kesesuaian_tahun, aksara_realisasi, 
+      final_tabel <-as.data.frame(cbind(provinsi, am_id, aksara_nama, sivatif_nama, kesesuaian_nama, aksara_tahun, sivatif_tahun, kesesuaian_tahun, aksara_realisasi, 
                                         sivatif_realisasi, kesesuaian_realisasi, aksara_jenis, sivatif_jenis, kesesuaian_jenis, aksara_jumlah, sivatif_jumlah,
                                         persen_selisih, kondisi, penilaian_validasi))
       d=rbind(d, final_tabel)
     }
-    
-    # d <- unique(d)
-    d <- data.frame(d)
+
+    d <- as.data.frame(d)
     rownames(d) <- NULL
-    tables$dataValid <- d
+    tables$allValid <- d
     
-    tabelVal <- as.data.frame(d)
+    d_provinsi <- filter(d, d$provinsi==input$dataProvince2)
+    d_provinsi$provinsi <- NULL
+    tables$dataValid <- d_provinsi
+    
+    tabelVal <- as.data.frame(d_provinsi)
     colnamesVal <- read_excel("data/colnames_sivatif.xlsx", sheet = "validasi")
     colnames(tabelVal) <- colnamesVal$`Nama kolom`
     tabelVal$`Proporsi (%)` <- as.numeric(as.character(tabelVal$`Proporsi (%)`))
