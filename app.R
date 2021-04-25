@@ -543,7 +543,7 @@ server <- function(input, output, session) {
     # data_lokasi = NULL
     # final_provinsi$lat[is.na(final_provinsi$lat)] <- 0
     # final_provinsi$long[is.na(final_provinsi$long)] <- 0
-    
+
     # for (i in nrow(final_provinsi)){
     #   if (final_provinsi$lat[i]!=0){
     #     gmaps[i] <- paste0("https://www.google.com/maps/search/?api=1&query=", final_provinsi$lat[i],",", final_provinsi$long[i])
@@ -972,10 +972,6 @@ server <- function(input, output, session) {
     hasil <- as.data.frame(c)
     tables$allQC <- hasil
     
-    # all_result <- hasil
-    # all_result$provinsi <- NULL
-    # tables$allQC <- all_result
-    
     hasil_provinsi <- filter(hasil, hasil$provinsi==input$dataProvince2)
     hasil_provinsi$provinsi <- NULL
     tables$dataQC <- hasil_provinsi
@@ -1005,25 +1001,6 @@ server <- function(input, output, session) {
       "}"
     )
     
-    # if (length(tabelHasil)==0){
-    #   tableError <- as.data.frame("Tidak ada data")
-    #   colnames(tableError) <- "Data Provinsi"
-    #   datatable(tableError, rownames = FALSE, escape = FALSE)
-    # } else {
-    #   datatable(tabelHasil, rownames = FALSE, escape = FALSE,
-    #             options = list(
-    #               headerCallback = JS(headerCallback), scrollX = TRUE
-    #             )
-    #   )
-    # }
-
-    # if (length(tabelHasil)==0){
-    #   tabelHasil <- as.data.frame("Tidak ada data")
-    #   colnames(tabelHasil) <- "Data Provinsi"
-    # } else {
-    #   tabelHasil <- tabelHasil
-    # }
-    
     datatable(tabelHasil, rownames = FALSE, escape = FALSE,
               options = list(
                 headerCallback = JS(headerCallback), scrollX = TRUE
@@ -1045,6 +1022,7 @@ server <- function(input, output, session) {
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
     
     hasil <- tables$allQC
+    # hasil <- tables$dataQC
     
     d=NULL
     for (i in 1:length(admin_id)) {
