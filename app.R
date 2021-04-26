@@ -181,7 +181,7 @@ server <- function(input, output, session) {
                           h2("Hasil Validasi Data AKSARA"),
                           plotlyOutput("conditionChart"),
                           br(),
-                          dataTableOutput("tabelvalidasi"),
+                          dataTableOutput("tabelValidasi"),
                           br(),
                           h2("Kontrol Kualitas Data SiVaTif"),
                           plotlyOutput("QCgraph2"),
@@ -201,6 +201,7 @@ server <- function(input, output, session) {
   
   ### MENU PENGGUNA (Mobile Apps Version)####
   
+  ### Value Box: Total Kontribusi ####
   output$kontribusi <- renderValueBox({
     kontribusi <- length(which(koboData$vam$`profil/email`==input$userName))
     valueBox(
@@ -208,11 +209,12 @@ server <- function(input, output, session) {
     )
   })
   
+  ### Value Box: Total Aksi Belum Divalidasi ####
   output$notValidate1 <- renderValueBox({
     data_aksara <- read_excel("data/aksara_table.xlsx")
     kontribusi <- length(which(koboData$vam$`profil/email`==input$userName))
     
-    ### Initiate Table: QC ####
+    ## Initiate Table: QC ###
     validation_table <- koboData$vam
 
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
@@ -295,9 +297,9 @@ server <- function(input, output, session) {
     }
     
     hasil <- as.data.frame(c)
-    ### End Table: QC ###
+    ## End Table: QC ###
     
-    ### Initiate Table: Validasi ####
+    ## Initiate Table: Validasi ###
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
     
     d=NULL
@@ -349,22 +351,16 @@ server <- function(input, output, session) {
     data_validasi <- data.frame(d)
     totalTervalidasi <- length(which(data_validasi$penilaian_validasi=="TERVALIDASI"))
     totalRevisi <- length(which(data_validasi$penilaian_validasi=="PERLU REVISI"))
-    ### End Table: Validasi ####
+    ## End Table: Validasi ###
     
     notValidateTotal <- nrow(data_aksara) - kontribusi - (totalTervalidasi + totalRevisi)
-    
-    # if (nrow(data_aksara) - kontribusi<0){
-    #   notValidateTotal <- -1*(nrow(data_aksara) - kontribusi)
-    # }else {
-    #   notValidateTotal <- nrow(data_aksara) - kontribusi - (totalTervalidasi + totalRevisi)
-    # }
     
     valueBox(
       paste0(notValidateTotal, " Aksi Mitigasi"), "Total Aksi Belum Anda Validasi", color="red"
     )
   })
   
-  ### Jumlah Aksi Mitigasi yang Berstatus Final ###
+  ### Grafik: Jumlah Aksi Mitigasi yang Berstatus Final ###
   output$subsectorChart <- renderPlotly({
     subsector <- ggplot(aksara_data, aes(x=factor(subsektor)))+
       geom_bar(stat="count", width=0.7, fill="steelblue")+
@@ -387,7 +383,7 @@ server <- function(input, output, session) {
     ggplotly(kabkot)
   })
   
-  ### Jumlah Aksi Mitigasi yang Tervalidasi ###
+  ### Grafik: Jumlah Aksi Mitigasi yang Tervalidasi ###
   aksara_data$jumlah <- 1
   aksara_data$validate[aksara_data$validate==1] <- "Tervalidasi"
   aksara_data$validate[aksara_data$validate==0] <- "Belum Tervalidasi"
@@ -412,7 +408,7 @@ server <- function(input, output, session) {
     ggplotly(valid_kabkot) #%>% layout(legend = list(orientation = "h", x = 0.1, y = 0.3))
   })
   
-  ## Peta Lokasi Aksi Mitigasi yang ada
+  ### Peta Lokasi Aksi Mitigasi yang Tersedia ####
   output$actionMaps <- renderLeaflet({
     # NOTE #1: need to connect to AKSARA db ####
     data_dummy <- read_excel("data/data_lokasi_rev.xlsx")
@@ -423,7 +419,6 @@ server <- function(input, output, session) {
     final_provinsi$long <- as.numeric(final_provinsi$long)
     
     main_data <- subset(final_provinsi, select=c(id, lat, long, nama_provinsi, nama_kegiatan, tahun_pelaporan))
-    # main_data <- na.omit(main_data)
     
     gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", main_data$lat,",", main_data$long)
     gmaps <- as.data.frame(gmaps)
@@ -433,7 +428,7 @@ server <- function(input, output, session) {
                                                                                               nama_provinsi, "</br>Lokasi Titik: " ,"<a href='", gmaps, "' target='_blank' >klik disini</a>"))
   })
   
-  ### Grafik Kontrol Kualitas Data SiVatif ####
+  ### Grafik: Kontrol Kualitas Data SiVatif ####
   output$QCgraph <- renderPlotly({
     validation_table <- koboData$vam
     # initiateTable <- koboData$vam
@@ -534,8 +529,6 @@ server <- function(input, output, session) {
     main_data <- subset(data_aksara, select=c(id, lat, long, nama_kegiatan, tahun_pelaporan, nama_provinsi))
     final_provinsi <- as.data.frame(main_data)
 
-    
-    # final_provinsi <- rbind(data_provinsi, final_jabar)
     final_provinsi$kabkot <- "Tidak ada data"
     final_provinsi$kecamatan <- "Tidak ada data"
     final_provinsi$desa <- "Tidak ada data"
@@ -555,7 +548,6 @@ server <- function(input, output, session) {
     # }
     
     gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", final_provinsi$lat[1:nrow(final_provinsi)],",", final_provinsi$long[1:nrow(final_provinsi)])
-    # gmaps <- paste0("https://www.google.com/maps/search/?api=1&query=", data_provinsi$lat,",", data_provinsi$long)
     
     final_provinsi$gmaps <- paste0("<a href='", gmaps, "' target='_blank'> Klik disini </a>")
     final_provinsi$lat <- NULL
@@ -583,6 +575,7 @@ server <- function(input, output, session) {
   
   ### MENU VALIDASI (Web Version) ####
   
+  ### Value Box: Total Kontributor ####
   output$kontributor <- renderValueBox({
     vamKoboData<-koboData$vam
     vamKoboData$`profil/email` <- tolower(vamKoboData$`profil/email`)
@@ -593,6 +586,7 @@ server <- function(input, output, session) {
     )
   })
   
+  ### Value Box: Total Validator ####
   output$validator <- renderValueBox({
     validatorTotal <- nrow(koboData$regist)
     valueBox(
@@ -600,7 +594,7 @@ server <- function(input, output, session) {
     )
   })
   
-  
+  ### Value Box: Total Aksi Tervalidasi ####
   output$validate <- renderValueBox({
     d <- tables$allValid
     validateTotal <- length(which(d$penilaian_validasi=="TERVALIDASI"))
@@ -609,6 +603,7 @@ server <- function(input, output, session) {
     )
   })
   
+  ### Value Box: Total Aksi Perlu Direvisi ####
   output$notValidate2 <- renderValueBox({
     d <- tables$allValid
     notValidateTotal <- length(which(d$penilaian_validasi=="PERLU DIREVISI"))
@@ -617,7 +612,7 @@ server <- function(input, output, session) {
     )
   })
   
-  
+  ### Grafik 1: Kontrol Kualitas Data SiVatif  ####
   output$conditionChart <- renderPlotly({
     # validation_table <- koboData$vam
     initiateTable <- koboData$vam
@@ -704,10 +699,10 @@ server <- function(input, output, session) {
     
     hasil <- as.data.frame(c)
     
-    ### TABEL AKSARA ####
+    ## Tabel AKSARA ###
     data_aksara <- read_excel("data/aksara_table.xlsx")
     
-    ### TABEL HASIL VALIDASI ####
+    ## Tabel Hasil Validasi ###
     # validation_table <- koboData$vam
     initiateTable <- koboData$vam
     validation_table <- filter(initiateTable, initiateTable$`admin_data/provinces`==input$dataProvince2)
@@ -775,13 +770,10 @@ server <- function(input, output, session) {
     ggplotly(kondisi) 
   })
   
-  ## Peta Lokasi Aksi Mitigasi
+  ### Peta Lokasi Aksi Mitigasi ####
   output$distributionMap <- renderLeaflet({
     koboData$vam$`_geolocation.0` <- as.numeric(koboData$vam$`_geolocation.0`)
     koboData$vam$`_geolocation.1` <- as.numeric(koboData$vam$`_geolocation.1`)
-    # vamKoboData$aksi <- vamKoboData$`pertanyaan_kunci/detail_aksi/q1.1`
-    # vamKoboData$aksi <- str_replace_all(aksi,"__", "_")
-    # vamKoboData$aksi <- str_replace_all(aksi,"_", " ")
     kobo_data <- subset(koboData$vam, select=c(`admin_data/id_aksi`, `_geolocation.0`, `_geolocation.1`, `pertanyaan_kunci/detail_aksi/q1.1`))
     colnames(kobo_data) = c("id","latitude", "longitude", "aksi")
     leaflet(data = kobo_data) %>% addTiles() %>% addMarkers(
@@ -789,7 +781,7 @@ server <- function(input, output, session) {
     )
   })
   
-  ### Grafik Kontrol Kualitas Data SiVatif ####
+  ### Grafik 2: Kontrol Kualitas Data SiVatif ####
   output$QCgraph2 <- renderPlotly({
     # validation_table <- koboData$vam
     initiateTable <- koboData$vam
@@ -883,6 +875,7 @@ server <- function(input, output, session) {
     ggplotly(grafikQC) 
   })
   
+  ### Tabel: Hasil Kontrol Kualitas Data SiVaTif ####
   output$tabelQC <- renderDataTable({
     validation_table <- koboData$vam
     # initiateTable <- koboData$vam
@@ -1009,20 +1002,19 @@ server <- function(input, output, session) {
     
   })
   
-  output$tabelvalidasi <- renderDataTable({
+  ### Tabel: Hasil Validasi Data SiVaTif ####
+  output$tabelValidasi <- renderDataTable({
     
-    ### TABEL AKSARA ####
+    ## Tabel AKSARA ###
     data_aksara <- read_excel("data/aksara_table.xlsx")
     
-    ### TABEL HASIL VALIDASI ####
+    ## Tabel Hasil Validasi ###
     validation_table <- koboData$vam
     # initiateTable <- koboData$vam
     # validation_table <- filter(initiateTable, initiateTable$`admin_data/provinces`==input$dataProvince2)
     
     admin_id <- unique(validation_table$`admin_data/id_aksi`)
-    
     hasil <- tables$allQC
-    # hasil <- tables$dataQC
     
     d=NULL
     for (i in 1:length(admin_id)) {
